@@ -18,8 +18,8 @@ const config = {
   parserOptions: {
     project: path.join(__dirname, "tsconfig.json"),
   },
-  plugins: ["@typescript-eslint"],
-  extends: ["next/core-web-vitals", "plugin:@typescript-eslint/recommended"],
+  plugins: ["@typescript-eslint", "prettier"],
+  extends: ["next/core-web-vitals", "plugin:@typescript-eslint/recommended", "plugin:react/recommended", "prettier"],
   rules: {
     "@typescript-eslint/consistent-type-imports": [
       "warn",
@@ -29,6 +29,14 @@ const config = {
       },
     ],
     "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+    "@typescript-eslint/no-floating-promises": "off",
+    "react/jsx-curly-brace-presence": [
+      "error",
+      {
+        props: "never",
+        children: "never",
+      }
+    ],
   },
 };
 
