@@ -8,7 +8,9 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import type { ReactNode } from "react";
+import EditProfileTabPanel from "~/components/profile/EditProfileTabPanel";
 import ProfileTabPanel from "~/components/profile/ProfileTabPanel";
+import { type ProfileTabsStore, useProfileTabs } from "~/stores/profile-tabs";
 
 const StyledTab = ({ children }: { children: ReactNode }) => (
   <Tab
@@ -22,9 +24,22 @@ const StyledTab = ({ children }: { children: ReactNode }) => (
   </Tab>
 );
 
+const activeTabsSelector = (state: ProfileTabsStore) => state.activeTab;
+const tabsSetterSelector = (state: ProfileTabsStore) => state.setActiveTab;
+
 const Profile = () => {
+  const activeTab = useProfileTabs(activeTabsSelector);
+  const setActiveTab = useProfileTabs(tabsSetterSelector);
   return (
-    <Tabs as={Flex} orientation="vertical" variant="line" h="100%">
+    <Tabs
+      isLazy
+      index={activeTab}
+      as={Flex}
+      orientation="vertical"
+      variant="line"
+      h="100%"
+      onChange={setActiveTab}
+    >
       <TabList
         overflow="auto"
         minW="10rem"
@@ -33,6 +48,7 @@ const Profile = () => {
         borderColor={useColorModeValue("gray.400", "gray.600")}
       >
         <StyledTab>My Account</StyledTab>
+        <StyledTab>Edit Profile</StyledTab>
         <Divider borderColor={useColorModeValue("gray.400", "gray.600")} />
         <StyledTab>Security</StyledTab>
       </TabList>
@@ -44,6 +60,7 @@ const Profile = () => {
         alignItems="center"
       >
         <ProfileTabPanel />
+        <EditProfileTabPanel />
       </TabPanels>
     </Tabs>
   );

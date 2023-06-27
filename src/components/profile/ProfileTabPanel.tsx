@@ -13,6 +13,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
+import { ProfileTabsStore, useProfileTabs } from "~/stores/profile-tabs";
 
 const FieldInfo = ({ label, value }: { label: string; value: string }) => (
   <Stack spacing={0}>
@@ -23,8 +24,11 @@ const FieldInfo = ({ label, value }: { label: string; value: string }) => (
   </Stack>
 );
 
+const tabsSetterSelector = (state: ProfileTabsStore) => state.setActiveTab;
+
 const ProfileTabPanel = () => {
   const { status, data: session } = useSession();
+  const setActiveTab = useProfileTabs(tabsSetterSelector);
   const panelColor = useColorModeValue("gray.300", "gray.700");
   return (
     <TabPanel display="flex" flexDirection="column" h="100%">
@@ -55,8 +59,9 @@ const ProfileTabPanel = () => {
             _hover={{ bg: useColorModeValue("teal.600", "teal.800") }}
             justifySelf="flex-end"
             shadow="md"
+            onClick={() => setActiveTab(1)}
           >
-            Edit Details
+            Edit Profile
           </Button>
         </HStack>
         <Stack
