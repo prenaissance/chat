@@ -20,8 +20,16 @@ import {
   Center,
   SkeletonCircle,
   Collapse,
+  useColorMode,
+  ChakraProps,
 } from "@chakra-ui/react";
-import { HamburgerIcon, CloseIcon, AddIcon } from "@chakra-ui/icons";
+import {
+  HamburgerIcon,
+  CloseIcon,
+  AddIcon,
+  SunIcon,
+  MoonIcon,
+} from "@chakra-ui/icons";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 const Links = ["Dashboard", "Projects", "Team"];
@@ -44,6 +52,7 @@ const NavLink = ({ children }: { children: ReactNode }) => (
 
 const AvatarMenu = () => {
   const session = useSession();
+  const { colorMode, toggleColorMode } = useColorMode();
   const avatarSrc =
     session?.data?.user.image ??
     "https://avatars.githubusercontent.com/u/5308588?v=4";
@@ -82,8 +91,15 @@ const AvatarMenu = () => {
         </Center>
         <br />
         <MenuDivider />
-        <MenuItem>Your Servers</MenuItem>
-        <MenuItem>Account</MenuItem>
+        <MenuItem as={NextLink} href="/profile">
+          Profile
+        </MenuItem>
+        <MenuItem onClick={toggleColorMode}>
+          <HStack alignItems="center">
+            <span>Switch Theme</span>
+            {colorMode === "light" ? <SunIcon /> : <MoonIcon />}
+          </HStack>
+        </MenuItem>
         <MenuItem
           onClick={() => {
             signOut();
@@ -96,7 +112,7 @@ const AvatarMenu = () => {
   );
 };
 
-const NavBar = () => {
+const NavBar = (props: ChakraProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
@@ -106,8 +122,11 @@ const NavBar = () => {
       top={0}
       bg={useColorModeValue("gray.100", "gray.900")}
       px={4}
+      borderBottom={"1px solid"}
+      borderColor={useColorModeValue("gray.400", "gray.600")}
+      {...props}
     >
-      <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
+      <Flex py={2} alignItems={"center"} justifyContent={"space-between"}>
         <IconButton
           size={"md"}
           icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}

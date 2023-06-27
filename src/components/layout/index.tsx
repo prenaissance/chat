@@ -4,10 +4,12 @@ import { Flex, chakra } from "@chakra-ui/react";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
-    <Flex flexDir="column" minH="100vh">
-      <NavBar />
-      <chakra.main flexGrow={1}>{children}</chakra.main>
-    </Flex>
+    <>
+      <NavBar h="3rem" />
+      <chakra.main display="flex" flexDir="column" height="calc(100vh - 3rem)">
+        {children}
+      </chakra.main>
+    </>
   );
 };
 
