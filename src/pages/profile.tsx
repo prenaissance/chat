@@ -7,8 +7,8 @@ import {
   Tabs,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { useSession } from "next-auth/react";
 import type { ReactNode } from "react";
+import ProfileTabPanel from "~/components/profile/ProfileTabPanel";
 
 const StyledTab = ({ children }: { children: ReactNode }) => (
   <Tab
@@ -23,8 +23,6 @@ const StyledTab = ({ children }: { children: ReactNode }) => (
 );
 
 const Profile = () => {
-  const { status, data: session } = useSession();
-
   return (
     <Tabs as={Flex} orientation="vertical" variant="line" h="100%">
       <TabList
@@ -34,11 +32,19 @@ const Profile = () => {
         borderRight="1px solid"
         borderColor={useColorModeValue("gray.400", "gray.600")}
       >
-        <StyledTab>Profile</StyledTab>
+        <StyledTab>My Account</StyledTab>
         <Divider borderColor={useColorModeValue("gray.400", "gray.600")} />
         <StyledTab>Security</StyledTab>
       </TabList>
-      <TabPanels></TabPanels>
+      <TabPanels
+        flexGrow={1}
+        minH="100%"
+        display="flex"
+        flexDir="column"
+        alignItems="center"
+      >
+        <ProfileTabPanel />
+      </TabPanels>
     </Tabs>
   );
 };
