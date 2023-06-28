@@ -43,16 +43,19 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    groups        Group[]
-    messages      Message[] @relation("UserMessages")
-    Message       Message[]
+    id                  String         @id @default(cuid())
+    name                String?
+    email               String?        @unique
+    emailVerified       DateTime?
+    image               String?
+    accounts            Account[]
+    sessions            Session[]
+    groups              Group[]
+    sentMessages        Message[]      @relation("SentMessages")
+    readMessages        Message[]      @relation("ReadMessages")
+    receivedMessages    Message[]      @relation("UserMessages")
+    conversations       Conversation[] @relation("UserConversations")
+    targetConversations Conversation[] @relation("UserTargetConversations")
 }
 
 model VerificationToken {
@@ -74,24 +77,44 @@ enum MessageTarget {
 }
 
 model Group {
-    id        String    @id @default(cuid())
-    createdAt DateTime  @default(now())
-    name      String
-    users     User[]
-    messages  Message[] @relation("GroupMessages")
+    id                  String         @id @default(cuid())
+    createdAt           DateTime       @default(now())
+    name                String
+    users               User[]
+    messages            Message[]      @relation("GroupMessages")
+    targetConversations Conversation[]
 }
 
 model Message {
-    id          String        @id @default(cuid())
-    createdAt   DateTime      @default(now())
-    source      MessageSource
-    content     String
-    userId      String
-    user        User?         @relation(fields: [userId], references: [id])
-    targetType  MessageTarget
-    targetId    String
-    targetUser  User?         @relation("UserMessages", fields: [targetId], references: [id], map: "userMessageId")
-    targetGroup Group?        @relation("GroupMessages", fields: [targetId], references: [id], map: "groupMessageId")
+    id           String         @id @default(cuid())
+    createdAt    DateTime       @default(now())
+    source       MessageSource
+    content      String
+    fromId       String
+    from         User?          @relation("SentMessages", fields: [fromId], references: [id])
+    targetType   MessageTarget
+    targetId     String
+    targetUser   User?          @relation("UserMessages", fields: [targetId], references: [id], map: "userMessageId")
+    targetGroup  Group?         @relation("GroupMessages", fields: [targetId], references: [id], map: "groupMessageId")
+    readBy       User[]         @relation("ReadMessages")
+    Conversation Conversation[]
 
     @@index(createdAt, type: BTree)
+    @@index([targetType, targetId], name: "targetIndex")
+}
+
+// denormalized table for easier querying
+model Conversation {
+    id            String        @id @default(cuid())
+    createdAt     DateTime      @default(now())
+    updatedAt     DateTime      @updatedAt
+    userId        String
+    user          User          @relation("UserConversations", fields: [userId], references: [id], onDelete: Cascade)
+    lastMessageId String?
+    lastMessage   Message?      @relation(fields: [lastMessageId], references: [id])
+    unreadCount   Int           @default(0)
+    targetType    MessageTarget
+    targetId      String
+    targetUser    User?         @relation("UserTargetConversations", fields: [targetId], references: [id], map: "userConversationId")
+    targetGroup   Group?        @relation(fields: [targetId], references: [id], map: "groupConversationId")
 }
