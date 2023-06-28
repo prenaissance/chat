@@ -59,27 +59,28 @@ const AvatarMenu = () => {
 
   return (
     <Menu>
-      <SkeletonCircle isLoaded={session.status !== "loading"}>
-        {session?.data ? (
-          <MenuButton
-            as={Button}
-            rounded={"full"}
-            variant={"link"}
-            cursor={"pointer"}
-            minW={0}
-          >
-            <Avatar size={"sm"} src={avatarSrc} />
-          </MenuButton>
-        ) : (
-          <Button
-            onClick={() => {
-              signIn();
-            }}
-          >
-            Sign in
-          </Button>
-        )}
-      </SkeletonCircle>
+      {session.status === "loading" ? (
+        <SkeletonCircle />
+      ) : session.data ? (
+        <MenuButton
+          as={Button}
+          rounded={"full"}
+          variant={"link"}
+          cursor={"pointer"}
+          minW={0}
+        >
+          <Avatar size={"sm"} src={avatarSrc} />
+        </MenuButton>
+      ) : (
+        <Button
+          h={8}
+          onClick={() => {
+            signIn();
+          }}
+        >
+          Sign in
+        </Button>
+      )}
       <MenuList alignItems={"center"}>
         <br />
         <Center>

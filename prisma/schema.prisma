@@ -15,12 +15,6 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
-
 // Necessary for Next auth
 model Account {
     id                String  @id @default(cuid())
@@ -56,6 +50,9 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
+    groups        Group[]
+    messages      Message[] @relation("UserMessages")
+    Message       Message[]
 }
 
 model VerificationToken {
@@ -64,4 +61,37 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+enum MessageSource {
+    User
+    System
+}
+
+enum MessageTarget {
+    User
+    Group
+}
+
+model Group {
+    id        String    @id @default(cuid())
+    createdAt DateTime  @default(now())
+    name      String
+    users     User[]
+    messages  Message[] @relation("GroupMessages")
+}
+
+model Message {
+    id          String        @id @default(cuid())
+    createdAt   DateTime      @default(now())
+    source      MessageSource
+    content     String
+    userId      String
+    user        User?         @relation(fields: [userId], references: [id])
+    targetType  MessageTarget
+    targetId    String
+    targetUser  User?         @relation("UserMessages", fields: [targetId], references: [id], map: "userMessageId")
+    targetGroup Group?        @relation("GroupMessages", fields: [targetId], references: [id], map: "groupMessageId")
+
+    @@index(createdAt, type: BTree)
 }
