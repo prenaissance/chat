@@ -91,7 +91,7 @@ model Message {
     source       MessageSource
     content      String
     fromId       String
-    from         User?          @relation("SentMessages", fields: [fromId], references: [id])
+    from         User           @relation("SentMessages", fields: [fromId], references: [id])
     targetType   MessageTarget
     targetId     String
     targetUser   User?          @relation("UserMessages", fields: [targetId], references: [id], map: "userMessageId")
@@ -117,4 +117,8 @@ model Conversation {
     targetId      String
     targetUser    User?         @relation("UserTargetConversations", fields: [targetId], references: [id], map: "userConversationId")
     targetGroup   Group?        @relation(fields: [targetId], references: [id], map: "groupConversationId")
+
+    @@unique([userId, targetType, targetId])
+    @@index([targetType, targetId], name: "conversationTargetIndex")
+    @@index([userId])
 }
