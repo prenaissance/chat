@@ -1,7 +1,20 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { MessageSource, MessageTarget } from "@prisma/client";
+import {
+  Group,
+  Message,
+  MessageSource,
+  MessageTarget,
+  User,
+} from "@prisma/client";
 import { RedisChannel } from "~/server/redis";
+import { observable } from "@trpc/server/observable";
+
+type MessageDTO = Message & {
+  from: User;
+  targetUser: User | null;
+  targetGroup: Group | null;
+};
 
 export const chatRouter = createTRPCRouter({
   sendMessage: protectedProcedure
@@ -152,4 +165,25 @@ export const chatRouter = createTRPCRouter({
       await redis.publish(RedisChannel.ChatMessages, messageJSON);
       return messageData;
     }),
+  onMessage: protectedProcedure.subscription(async ({ ctx }) => {
+    const { redis, session } = ctx;
+
+    return observable<MessageDTO>((emitter) => {
+      // this approach is most likely not scalable, change later
+      const subscriber = redis.duplicate();
+      subscriber.subscribe(RedisChannel.ChatMessages);
+
+      subscriber.on("message", (_channel, message) => {
+        const messageData = JSON.parse(message) as MessageDTO;
+        if (messageData.from.id === session.user.id) {
+          emitter.next(messageData);
+        }
+      });
+
+      return () => {
+        subscriber.unsubscribe();
+        subscriber.quit();
+      };
+    });
+  }),
 });

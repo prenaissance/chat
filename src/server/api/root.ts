@@ -10,6 +10,8 @@ import { chatRouter } from "./routers/chat";
 export const appRouter = createTRPCRouter({
   example: exampleRouter,
   chat: chatRouter,
+  correspondents: chatRouter,
+  conversations: chatRouter,
 });
 
 // export type definition of API
