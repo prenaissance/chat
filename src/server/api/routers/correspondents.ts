@@ -23,6 +23,7 @@ export const correspondentsRouter = createTRPCRouter({
             not: userId,
           },
         },
+        take: 5,
       });
 
       const groups = await prisma.group.findMany({
@@ -36,6 +37,7 @@ export const correspondentsRouter = createTRPCRouter({
             },
           },
         },
+        take: 5,
       });
 
       return {
