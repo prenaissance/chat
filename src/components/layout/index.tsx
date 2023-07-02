@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import NavBar from "./Navbar";
-import { Flex, chakra } from "@chakra-ui/react";
+import { chakra } from "@chakra-ui/react";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (

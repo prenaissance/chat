@@ -18,9 +18,17 @@ const config = {
   parserOptions: {
     project: path.join(__dirname, "tsconfig.json"),
   },
-  plugins: ["@typescript-eslint", "prettier"],
-  extends: ["next/core-web-vitals", "plugin:@typescript-eslint/recommended", "plugin:react/recommended", "prettier"],
+  plugins: ["@typescript-eslint", "react", "react-hooks", "prettier"],
+  extends: [
+    "next/core-web-vitals",
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+  ],
   rules: {
+    "prettier/prettier": [
+      "error",
+      { endOfLine: "auto", semi: true, trailingComma: "es5" },
+    ],
     "@typescript-eslint/consistent-type-imports": [
       "warn",
       {
@@ -35,7 +43,7 @@ const config = {
       {
         props: "never",
         children: "never",
-      }
+      },
     ],
   },
 };

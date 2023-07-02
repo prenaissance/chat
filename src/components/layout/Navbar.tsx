@@ -21,30 +21,25 @@ import {
   SkeletonCircle,
   Collapse,
   useColorMode,
-  ChakraProps,
+  type ChakraProps,
 } from "@chakra-ui/react";
-import {
-  HamburgerIcon,
-  CloseIcon,
-  AddIcon,
-  SunIcon,
-  MoonIcon,
-} from "@chakra-ui/icons";
+import { HamburgerIcon, CloseIcon, SunIcon, MoonIcon } from "@chakra-ui/icons";
 import { signIn, signOut, useSession } from "next-auth/react";
+import CorrespondentsSearch from "./correspondents-search";
 
-const Links = ["Dashboard", "Projects", "Team"];
+const Links = ["Chat"];
 
 const NavLink = ({ children }: { children: ReactNode }) => (
   <Link
     as={NextLink}
     px={2}
     py={1}
-    rounded={"md"}
+    rounded="md"
     _hover={{
       textDecoration: "none",
       bg: useColorModeValue("gray.200", "gray.700"),
     }}
-    href={"#"}
+    href="#"
   >
     {children}
   </Link>
@@ -64,27 +59,27 @@ const AvatarMenu = () => {
       ) : session.data ? (
         <MenuButton
           as={Button}
-          rounded={"full"}
-          variant={"link"}
-          cursor={"pointer"}
+          rounded="full"
+          variant="link"
+          cursor="pointer"
           minW={0}
         >
-          <Avatar size={"sm"} src={avatarSrc} />
+          <Avatar size="sm" src={avatarSrc} />
         </MenuButton>
       ) : (
         <Button
           h={8}
           onClick={() => {
-            signIn();
+            void signIn();
           }}
         >
           Sign in
         </Button>
       )}
-      <MenuList alignItems={"center"}>
+      <MenuList alignItems="center">
         <br />
         <Center>
-          <Avatar size={"2xl"} src={avatarSrc} />
+          <Avatar size="2xl" src={avatarSrc} />
         </Center>
         <br />
         <Center>
@@ -103,7 +98,7 @@ const AvatarMenu = () => {
         </MenuItem>
         <MenuItem
           onClick={() => {
-            signOut();
+            void signOut();
           }}
         >
           Logout
@@ -123,21 +118,22 @@ const NavBar = (props: ChakraProps) => {
       top={0}
       bg={useColorModeValue("gray.100", "gray.900")}
       px={4}
-      borderBottom={"1px solid"}
+      borderBottom="1px solid"
       borderColor={useColorModeValue("gray.400", "gray.600")}
       {...props}
     >
-      <Flex py={2} alignItems={"center"} justifyContent={"space-between"}>
+      <Flex py={2} alignItems="center" justifyContent="space-between">
         <IconButton
-          size={"md"}
+          size="md"
           icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
-          aria-label={"Open Menu"}
+          aria-label="Open Menu"
           display={{ md: "none" }}
           onClick={isOpen ? onClose : onOpen}
         />
-        <HStack spacing={8} alignItems={"center"}>
+        <CorrespondentsSearch />
+        <HStack spacing={8} alignItems="center">
           <Box>Logo</Box>
-          <HStack as={"nav"} spacing={4} display={{ base: "none", md: "flex" }}>
+          <HStack as="nav" spacing={4} display={{ base: "none", md: "flex" }}>
             {Links.map((link) => (
               <NavLink key={link}>{link}</NavLink>
             ))}
@@ -148,7 +144,7 @@ const NavBar = (props: ChakraProps) => {
 
       <Collapse in={isOpen} animateOpacity>
         <Box pb={4} display={{ md: "none" }}>
-          <Stack as={"nav"} spacing={4}>
+          <Stack as="nav" spacing={4}>
             {Links.map((link) => (
               <NavLink key={link}>{link}</NavLink>
             ))}

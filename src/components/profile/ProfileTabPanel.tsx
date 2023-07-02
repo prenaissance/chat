@@ -13,7 +13,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
-import { ProfileTabsStore, useProfileTabs } from "~/stores/profile-tabs";
+import { type ProfileTabsStore, useProfileTabs } from "~/stores/profile-tabs";
 
 const FieldInfo = ({ label, value }: { label: string; value: string }) => (
   <Stack spacing={0}>

@@ -1,24 +1,17 @@
 import {
-  Avatar,
-  AvatarBadge,
-  Box,
-  Button,
-  Divider,
   FormControl,
   FormLabel,
   Grid,
   GridItem,
-  HStack,
   Heading,
   Input,
-  SkeletonCircle,
   Stack,
   TabPanel,
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
-import { ProfileTabsStore, useProfileTabs } from "~/stores/profile-tabs";
+import { type ProfileTabsStore, useProfileTabs } from "~/stores/profile-tabs";
 import UserCard from "../common/UserCard";
 
 const FieldInfo = ({ label, value }: { label: string; value: string }) => (
@@ -43,7 +36,7 @@ const EditProfileTabPanel = () => {
 
       <Grid gridTemplateColumns="repeat(2, 1fr)" flexGrow={1} gap={6}>
         <GridItem>
-          <FormControl w="sm" textTransform={"uppercase"}>
+          <FormControl w="sm" textTransform="uppercase">
             <FormLabel color="gray.400">Username</FormLabel>
             <Input rounded="sm" variant="filled" bgColor={panelColor} />
           </FormControl>

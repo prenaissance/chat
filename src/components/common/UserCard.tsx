@@ -5,7 +5,7 @@ import {
   Card,
   CardBody,
   CardHeader,
-  ChakraProps,
+  type ChakraProps,
   useColorModeValue,
   Divider,
   Stack,
