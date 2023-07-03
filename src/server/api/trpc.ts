@@ -9,12 +9,14 @@
 
 import { initTRPC, TRPCError } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
+import { type CreateWSSContextFnOptions } from "@trpc/server/adapters/ws";
 import { type Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { getServerAuthSession } from "~/server/auth";
 import { prisma } from "~/server/db";
 import { redis } from "~/server/redis";
+import { parseCookies } from "~/utils/cookies";
 
 /**
  * 1. CONTEXT
@@ -26,6 +28,8 @@ import { redis } from "~/server/redis";
 
 type CreateContextOptions = {
   session: Session | null;
+  prisma?: typeof prisma;
+  redis?: typeof redis;
 };
 
 /**
@@ -41,8 +45,8 @@ type CreateContextOptions = {
 const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
-    prisma,
-    redis,
+    prisma: opts.prisma ?? prisma,
+    redis: opts.redis ?? redis,
   };
 };
 
@@ -60,6 +64,41 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
   return createInnerTRPCContext({
     session,
+    prisma,
+    redis,
+  });
+};
+
+const getSession = async (sessionToken?: string): Promise<Session | null> => {
+  if (!sessionToken) return null;
+
+  const sessionAndUser = await prisma.session.findUnique({
+    where: { sessionToken },
+    include: { user: true },
+  });
+  if (!sessionAndUser) return null;
+
+  return {
+    user: {
+      id: sessionAndUser.user.id,
+      name: sessionAndUser.user.name,
+      email: sessionAndUser.user.email,
+    },
+    expires: sessionAndUser.expires.toISOString(),
+  };
+};
+
+export const createWSSContext = async (opts: CreateWSSContextFnOptions) => {
+  const { req } = opts;
+  const cookies = parseCookies(req.headers.cookie ?? "");
+  const sessionToken = cookies.get("next-auth.session-token");
+
+  const session = await getSession(sessionToken);
+
+  return createInnerTRPCContext({
+    session,
+    prisma,
+    redis,
   });
 };
 
