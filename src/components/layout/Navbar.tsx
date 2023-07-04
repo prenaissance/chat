@@ -130,13 +130,13 @@ const NavBar = (props: ChakraProps) => {
           display={{ md: "none" }}
           onClick={isOpen ? onClose : onOpen}
         />
-        <CorrespondentsSearch />
         <HStack spacing={8} alignItems="center">
           <Box>Logo</Box>
           <HStack as="nav" spacing={4} display={{ base: "none", md: "flex" }}>
             {Links.map((link) => (
               <NavLink key={link}>{link}</NavLink>
             ))}
+            <CorrespondentsSearch />
           </HStack>
         </HStack>
         <AvatarMenu />
