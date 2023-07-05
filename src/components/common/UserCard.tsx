@@ -1,6 +1,4 @@
 import {
-  Avatar,
-  AvatarBadge,
   Text,
   Card,
   CardBody,
@@ -12,6 +10,9 @@ import {
   Button,
 } from "@chakra-ui/react";
 import type { Session } from "next-auth";
+import NextLink from "next/link";
+
+import UserAvatar from "./UserAvatar";
 
 type Props = {
   user?: Session["user"];
@@ -28,17 +29,12 @@ const UserCard = ({ user, isOnline = true, ...props }: Props) => (
     {...props}
   >
     <CardHeader p={2}>
-      <Avatar
+      <UserAvatar
+        user={user}
+        isOnline={isOnline}
         size="lg"
-        name={user?.name ?? "Placeholder Name"}
-        src={user?.image ?? undefined}
-      >
-        <AvatarBadge
-          boxSize="1em"
-          bg={isOnline ? "green.500" : "gray.500"}
-          borderColor={useColorModeValue("gray.300", "gray.700")}
-        />
-      </Avatar>
+        badgeBorderColor={useColorModeValue("gray.300", "gray.700")}
+      />
     </CardHeader>
     <CardBody rounded="md" bgColor={useColorModeValue("gray.400", "gray.900")}>
       <Text fontSize="xl" fontWeight="bold">
@@ -57,8 +53,12 @@ const UserCard = ({ user, isOnline = true, ...props }: Props) => (
       </Stack>
       <Divider my={2} />
       <Button
+        as={NextLink}
         variant="filled"
+        href={`/chat/user/${user?.id ?? ""}`}
+        disabled={!!user}
         bgColor={useColorModeValue("teal.300", "teal.900")}
+        _hover={{ bgColor: useColorModeValue("teal.400", "teal.800") }}
       >
         Message
       </Button>

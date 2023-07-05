@@ -1,12 +1,9 @@
 import {
-  Avatar,
-  AvatarBadge,
   Box,
   Button,
   Divider,
   HStack,
   Heading,
-  SkeletonCircle,
   Stack,
   TabPanel,
   Text,
@@ -14,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { type ProfileTabsStore, useProfileTabs } from "~/stores/profile-tabs";
+import UserAvatar from "../common/UserAvatar";
 
 const FieldInfo = ({ label, value }: { label: string; value: string }) => (
   <Stack spacing={0}>
@@ -27,7 +25,7 @@ const FieldInfo = ({ label, value }: { label: string; value: string }) => (
 const tabsSetterSelector = (state: ProfileTabsStore) => state.setActiveTab;
 
 const ProfileTabPanel = () => {
-  const { status, data: session } = useSession();
+  const { data: session } = useSession();
   const setActiveTab = useProfileTabs(tabsSetterSelector);
   const panelColor = useColorModeValue("gray.300", "gray.700");
   return (
@@ -38,19 +36,12 @@ const ProfileTabPanel = () => {
 
       <Box maxW="lg" rounded="xl" shadow="xl" bgColor={panelColor} p={4}>
         <HStack spacing={2} mt="6rem" alignItems="flex-end">
-          <SkeletonCircle isLoaded={status !== "loading"} size="8rem" mx="1rem">
-            <Avatar
-              size="2xl"
-              name={session?.user?.name ?? "Placeholder Name"}
-              src={session?.user?.image ?? undefined}
-            >
-              <AvatarBadge
-                boxSize="1em"
-                bg="green.500"
-                borderColor={panelColor}
-              />
-            </Avatar>
-          </SkeletonCircle>
+          <UserAvatar
+            user={session?.user}
+            size="2xl"
+            isOnline
+            badgeBorderColor={panelColor}
+          />
           <Text fontSize="3xl" fontWeight="bold">
             {session?.user?.name ?? "Placeholder Name"}
           </Text>
