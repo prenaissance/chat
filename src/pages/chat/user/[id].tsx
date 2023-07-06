@@ -63,7 +63,7 @@ const UserChat = () => {
   return (
     <ChatLayout>
       <Flex h="100%" w="100%">
-        <Box flexGrow={1}>
+        <Flex flexDirection="column" flexGrow={1}>
           <HStack
             py={1}
             px={2}
@@ -86,7 +86,7 @@ const UserChat = () => {
               icon={<InfoIcon />}
             />
           </HStack>
-          <Flex direction="column" px={2} pb={4}>
+          <Flex direction="column" flexGrow={1} px={2} py={4}>
             <Box flexGrow={1} overflowY="auto">
               {messages.map((message) => (
                 <chakra.div key={message.id}>{message.content}</chakra.div>
@@ -98,13 +98,19 @@ const UserChat = () => {
                 e.preventDefault();
                 handleSendMessage();
               }}
+              display="flex"
+              mb={2}
+              gap={1}
             >
               <Input
                 placeholder="Type a new message"
                 value={typedMessage}
                 onChange={handleTypedMessageChange}
+                flexGrow={1}
+                variant="filled"
               />
               <IconButton
+                variant="ghost"
                 type="submit"
                 aria-label="Send message"
                 icon={<ArrowForwardIcon />}
@@ -113,7 +119,7 @@ const UserChat = () => {
               />
             </chakra.form>
           </Flex>
-        </Box>
+        </Flex>
         <Show above="xl">
           <chakra.aside
             w={80}

@@ -54,6 +54,7 @@ const CorrespondentsSearch = () => {
       <Box position="absolute" top="100%" w="100%">
         {isOpen && (
           <SearchResults
+            zIndex="dropdown"
             borderX="1px solid"
             borderBottom="1px solid"
             roundedBottom="sm"
