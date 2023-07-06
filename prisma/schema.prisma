@@ -44,10 +44,11 @@ model Session {
 
 model User {
     id                  String         @id @default(cuid())
-    name                String?
+    name                String
     email               String?        @unique
     emailVerified       DateTime?
     image               String?
+    createdAt           DateTime       @default(now())
     accounts            Account[]
     sessions            Session[]
     groups              Group[]
@@ -85,22 +86,25 @@ model Group {
     targetConversations Conversation[]
 }
 
+// polymorphism was hard to achieve with prisma. subpar solution, will use mongoose next time
 model Message {
-    id           String         @id @default(cuid())
-    createdAt    DateTime       @default(now())
-    source       MessageSource
-    content      String
-    fromId       String
-    from         User           @relation("SentMessages", fields: [fromId], references: [id])
-    targetType   MessageTarget
-    targetId     String
-    targetUser   User?          @relation("UserMessages", fields: [targetId], references: [id], map: "userMessageId")
-    targetGroup  Group?         @relation("GroupMessages", fields: [targetId], references: [id], map: "groupMessageId")
-    readBy       User[]         @relation("ReadMessages")
-    Conversation Conversation[]
+    id            String         @id @default(cuid())
+    createdAt     DateTime       @default(now())
+    source        MessageSource
+    content       String
+    fromId        String
+    from          User           @relation("SentMessages", fields: [fromId], references: [id])
+    targetType    MessageTarget
+    targetUserId  String?
+    targetUser    User?          @relation("UserMessages", fields: [targetUserId], references: [id])
+    targetGroupId String?
+    targetGroup   Group?         @relation("GroupMessages", fields: [targetGroupId], references: [id])
+    readBy        User[]         @relation("ReadMessages")
+    Conversation  Conversation[]
 
     @@index(createdAt, type: BTree)
-    @@index([targetType, targetId], name: "targetIndex")
+    @@index([targetType, targetUserId], name: "targetUserIndex")
+    @@index([targetType, targetGroupId], name: "targetGroupIndex")
 }
 
 // denormalized table for easier querying
@@ -114,11 +118,14 @@ model Conversation {
     lastMessage   Message?      @relation(fields: [lastMessageId], references: [id])
     unreadCount   Int           @default(0)
     targetType    MessageTarget
-    targetId      String
-    targetUser    User?         @relation("UserTargetConversations", fields: [targetId], references: [id], map: "userConversationId")
-    targetGroup   Group?        @relation(fields: [targetId], references: [id], map: "groupConversationId")
+    targetUserId  String?
+    targetUser    User?         @relation("UserTargetConversations", fields: [targetUserId], references: [id])
+    targetGroupId String?
+    targetGroup   Group?        @relation(fields: [targetGroupId], references: [id])
 
-    @@unique([userId, targetType, targetId])
-    @@index([targetType, targetId], name: "conversationTargetIndex")
+    @@unique([userId, targetType, targetUserId])
+    @@unique([userId, targetType, targetGroupId])
+    @@index([targetType, targetUserId], name: "conversationUserTargetIndex")
+    @@index([targetType, targetGroupId], name: "conversationGroupTargetIndex")
     @@index([userId])
 }

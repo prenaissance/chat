@@ -1,20 +1,41 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
 import {
-  type Group,
   type Message,
   MessageSource,
   MessageTarget,
   type User,
+  type Group,
 } from "@prisma/client";
-import { RedisChannel } from "~/server/redis";
 import { observable } from "@trpc/server/observable";
 
-type MessageDTO = Message & {
-  from: User;
-  targetUser: User | null;
-  targetGroup: Group | null;
-};
+import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { RedisChannel } from "~/server/redis";
+import { type MessageDTO } from "~/shared/dtos/chat";
+
+const messageToDto = (
+  message: Message & {
+    from: User;
+    targetUser: User | null;
+    targetGroup: Group | null;
+  }
+): MessageDTO =>
+  message.targetType === MessageTarget.User
+    ? {
+        ...message,
+        targetType: MessageTarget.User,
+        targetUserId: message.targetUserId!,
+        targetUser: message.targetUser!,
+        targetGroupId: null,
+        targetGroup: null,
+      }
+    : {
+        ...message,
+        targetType: MessageTarget.Group,
+        targetUserId: null,
+        targetUser: null,
+        targetGroupId: message.targetGroupId!,
+        targetGroup: message.targetGroup!,
+      };
 
 export const chatRouter = createTRPCRouter({
   sendMessage: protectedProcedure
@@ -25,20 +46,22 @@ export const chatRouter = createTRPCRouter({
         targetId: z.string().cuid(),
       })
     )
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const { message, targetType, targetId } = input;
       const { session, prisma, redis } = ctx;
 
       const fromId = session.user.id;
 
       const messageData = await prisma.$transaction(async (trs) => {
-        const messageData = await trs.message.create({
+        const rawMessageData = await trs.message.create({
           data: {
             content: message,
             source: MessageSource.User,
             fromId,
             targetType,
-            targetId,
+            [targetType === MessageTarget.User
+              ? "targetUserId"
+              : "targetGroupId"]: targetId,
             readBy: {
               connect: {
                 id: fromId,
@@ -52,19 +75,21 @@ export const chatRouter = createTRPCRouter({
           },
         });
 
-        if (messageData.targetUser) {
+        const messageData = messageToDto(rawMessageData);
+
+        if (messageData.targetType === MessageTarget.User) {
           await trs.conversation.upsert({
             where: {
-              userId_targetType_targetId: {
+              userId_targetType_targetUserId: {
                 userId: fromId,
                 targetType,
-                targetId,
+                targetUserId: targetId,
               },
             },
             create: {
               userId: fromId,
               targetType,
-              targetId,
+              targetUserId: targetId,
               lastMessageId: messageData.id,
               unreadCount: 0,
             },
@@ -76,16 +101,16 @@ export const chatRouter = createTRPCRouter({
 
           await trs.conversation.upsert({
             where: {
-              userId_targetType_targetId: {
+              userId_targetType_targetUserId: {
                 userId: messageData.targetUser.id,
                 targetType,
-                targetId: fromId,
+                targetUserId: fromId,
               },
             },
             create: {
               userId: messageData.targetUser.id,
               targetType,
-              targetId: fromId,
+              targetUserId: fromId,
               lastMessageId: messageData.id,
               unreadCount: 1,
             },
@@ -112,16 +137,16 @@ export const chatRouter = createTRPCRouter({
 
           await trs.conversation.upsert({
             where: {
-              userId_targetType_targetId: {
+              userId_targetType_targetUserId: {
                 userId: fromId,
                 targetType,
-                targetId,
+                targetUserId: targetId,
               },
             },
             create: {
               userId: fromId,
               targetType,
-              targetId,
+              targetUserId: targetId,
               lastMessageId: messageData.id,
               unreadCount: 0,
             },
@@ -135,16 +160,16 @@ export const chatRouter = createTRPCRouter({
             groupUsers.map(async (user) => {
               await trs.conversation.upsert({
                 where: {
-                  userId_targetType_targetId: {
+                  userId_targetType_targetUserId: {
                     userId: user.id,
                     targetType,
-                    targetId: fromId,
+                    targetUserId: fromId,
                   },
                 },
                 create: {
                   userId: user.id,
                   targetType,
-                  targetId: fromId,
+                  targetUserId: fromId,
                   lastMessageId: messageData.id,
                   unreadCount: 1,
                 },
@@ -161,10 +186,12 @@ export const chatRouter = createTRPCRouter({
 
         return messageData;
       });
+
       const messageJSON = JSON.stringify(messageData);
       await redis.publish(RedisChannel.ChatMessages, messageJSON);
       return messageData;
     }),
+
   onMessage: protectedProcedure.subscription(({ ctx }) => {
     const { redis, session } = ctx;
 
@@ -186,4 +213,34 @@ export const chatRouter = createTRPCRouter({
       };
     });
   }),
+
+  getMessages: protectedProcedure
+    .input(
+      z.object({
+        targetType: z.nativeEnum(MessageTarget),
+        targetId: z.string().cuid(),
+      })
+    )
+    .query(async ({ input, ctx }): Promise<MessageDTO[]> => {
+      const { targetType, targetId } = input;
+      const { session, prisma } = ctx;
+
+      const messages = await prisma.message.findMany({
+        where: {
+          fromId: session.user.id,
+          targetType,
+          [targetType === MessageTarget.User
+            ? "targetUserId"
+            : "targetGroupId"]: targetId,
+        },
+        include: {
+          from: true,
+          targetGroup: true,
+          targetUser: true,
+        },
+        take: 50,
+      });
+
+      return messages.map(messageToDto);
+    }),
 });
