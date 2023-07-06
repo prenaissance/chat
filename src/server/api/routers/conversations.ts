@@ -1,3 +1,4 @@
+import { toTargetDto } from "~/shared/dtos/target";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const conversationsRouter = createTRPCRouter({
@@ -14,8 +15,13 @@ export const conversationsRouter = createTRPCRouter({
         targetUser: true,
         lastMessage: true,
       },
+      orderBy: {
+        lastMessage: {
+          createdAt: "desc",
+        },
+      },
     });
 
-    return conversations;
+    return conversations.map(toTargetDto);
   }),
 });

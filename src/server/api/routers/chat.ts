@@ -11,31 +11,7 @@ import { observable } from "@trpc/server/observable";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { RedisChannel } from "~/server/redis";
 import { type MessageDTO } from "~/shared/dtos/chat";
-
-const messageToDto = (
-  message: Message & {
-    from: User;
-    targetUser: User | null;
-    targetGroup: Group | null;
-  }
-): MessageDTO =>
-  message.targetType === MessageTarget.User
-    ? {
-        ...message,
-        targetType: MessageTarget.User,
-        targetUserId: message.targetUserId!,
-        targetUser: message.targetUser!,
-        targetGroupId: null,
-        targetGroup: null,
-      }
-    : {
-        ...message,
-        targetType: MessageTarget.Group,
-        targetUserId: null,
-        targetUser: null,
-        targetGroupId: message.targetGroupId!,
-        targetGroup: message.targetGroup!,
-      };
+import { toTargetDto } from "~/shared/dtos/target";
 
 export const chatRouter = createTRPCRouter({
   sendMessage: protectedProcedure
@@ -75,7 +51,7 @@ export const chatRouter = createTRPCRouter({
           },
         });
 
-        const messageData = messageToDto(rawMessageData);
+        const messageData: MessageDTO = toTargetDto(rawMessageData);
 
         if (messageData.targetType === MessageTarget.User) {
           await trs.conversation.upsert({
@@ -241,6 +217,6 @@ export const chatRouter = createTRPCRouter({
         take: 50,
       });
 
-      return messages.map(messageToDto);
+      return messages.map(toTargetDto);
     }),
 });

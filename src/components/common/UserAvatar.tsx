@@ -8,7 +8,7 @@ import {
 import { type Session } from "next-auth";
 
 type Props = {
-  user?: Session["user"];
+  user?: Omit<Session["user"], "email">;
   isOnline?: boolean;
   size?: AvatarProps["size"];
   badgeBorderColor?: ChakraProps["borderColor"];
