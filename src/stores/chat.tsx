@@ -16,6 +16,8 @@ type ChatActions = {
   rollbackMessage: (message: MessageDTO) => void;
   pushConversation: (conversation: ConversationDto) => void;
   setConversations: (conversations: ConversationDto[]) => void;
+  readUserConversation: (targetUserId: string) => void;
+  readGroupConversation: (groupId: string) => void;
 };
 
 export type ChatStore = ChatState & ChatActions;
@@ -39,5 +41,23 @@ export const useChatStore = create<ChatStore>((set) => ({
   },
   setConversations: (conversations) => {
     set({ conversations });
+  },
+  readUserConversation: (targetUserId) => {
+    set((state) => ({
+      conversations: state.conversations.map((conversation) =>
+        conversation.targetUserId === targetUserId
+          ? { ...conversation, unreadCount: 0 }
+          : conversation
+      ),
+    }));
+  },
+  readGroupConversation: (targetGroupId) => {
+    set((state) => ({
+      conversations: state.conversations.map((conversation) =>
+        conversation.targetGroupId === targetGroupId
+          ? { ...conversation, unreadCount: 0 }
+          : conversation
+      ),
+    }));
   },
 }));

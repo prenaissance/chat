@@ -25,15 +25,18 @@ const selector = ({
   setMessages,
   addMessage,
   rollbackMessage,
+  readUserConversation,
 }: ChatStore) => ({
   messages,
   setMessages,
   addMessage,
   rollbackMessage,
+  readUserConversation,
 });
 
 const UserChat = () => {
-  const { messages, setMessages, addMessage } = useChatStore(selector, shallow);
+  const { messages, setMessages, addMessage, readUserConversation } =
+    useChatStore(selector, shallow);
   const router = useRouter();
   const userId = router.query.id as string;
   const userQuery = api.users.getUser.useQuery({
@@ -59,6 +62,9 @@ const UserChat = () => {
 
     setTypedMessage("");
   };
+
+  // might be bad pattern, but this branch is not subscribed to conversations
+  useEffect(() => readUserConversation(userId), [userId, readUserConversation]);
 
   useEffect(() => {
     if (messagesQuery.isSuccess) {
