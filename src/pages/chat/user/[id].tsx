@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ArrowForwardIcon, InfoIcon } from "@chakra-ui/icons";
 import {
   Box,
@@ -12,23 +13,27 @@ import {
 } from "@chakra-ui/react";
 import { MessageTarget } from "@prisma/client";
 import { useRouter } from "next/router";
-import {
-  useEffect,
-  experimental_useEffectEvent as useEffectEvent,
-  useState,
-} from "react";
+import { shallow } from "zustand/shallow";
+
 import ChatLayout from "~/components/chat/ChatLayout";
 import UserAvatar from "~/components/common/UserAvatar";
 import { type ChatStore, useChatStore } from "~/stores/chat";
 import { api } from "~/utils/api";
 
-const selector = ({ messages, setMessages }: ChatStore) => ({
+const selector = ({
   messages,
   setMessages,
+  addMessage,
+  rollbackMessage,
+}: ChatStore) => ({
+  messages,
+  setMessages,
+  addMessage,
+  rollbackMessage,
 });
 
 const UserChat = () => {
-  const { messages, setMessages } = useChatStore(selector);
+  const { messages, setMessages, addMessage } = useChatStore(selector, shallow);
   const router = useRouter();
   const userId = router.query.id as string;
   const userQuery = api.users.getUser.useQuery({
@@ -41,16 +46,20 @@ const UserChat = () => {
     targetId: userId,
     targetType: MessageTarget.User,
   });
-  const sendMessageMutation = api.chat.sendMessage.useMutation();
+  const sendMessageMutation = api.chat.sendUserMessage.useMutation({
+    onSuccess: addMessage,
+  });
 
   const handleTypedMessageChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setTypedMessage(e.target.value);
-  const handleSendMessage = () =>
+  const handleSendMessage = () => {
     sendMessageMutation.mutate({
       message: typedMessage,
-      targetId: userId,
-      targetType: MessageTarget.User,
+      targetUserId: userId,
     });
+
+    setTypedMessage("");
+  };
 
   useEffect(() => {
     if (messagesQuery.isSuccess) {
