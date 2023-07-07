@@ -207,47 +207,82 @@ export const chatRouter = createTRPCRouter({
     });
   }),
 
-  getMessages: protectedProcedure
+  getUserMessages: protectedProcedure
     .input(
       z.object({
-        targetType: z.nativeEnum(MessageTarget),
-        targetId: z.string().cuid(),
+        targetUserId: z.string().cuid(),
       })
     )
     .query(async ({ input, ctx }): Promise<MessageDTO[]> => {
-      const { targetType, targetId } = input;
+      const { targetUserId } = input;
+      const { session, prisma } = ctx;
+      // set all messages from this user to read
+      await prisma.conversation.update({
+        where: {
+          userId_targetType_targetUserId: {
+            userId: session.user.id,
+            targetType: MessageTarget.User,
+            targetUserId,
+          },
+        },
+        data: {
+          unreadCount: 0,
+        },
+      });
+
+      const messages = await prisma.message.findMany({
+        where: {
+          OR: [
+            {
+              fromId: session.user.id,
+              targetUserId,
+            },
+            {
+              fromId: targetUserId,
+              targetUserId: session.user.id,
+            },
+          ],
+        },
+        include: {
+          from: true,
+          targetUser: true,
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+        take: 100,
+      });
+
+      return messages.map(toTargetDto);
+    }),
+
+  getGroupMessages: protectedProcedure
+    .input(
+      z.object({
+        targetGroupId: z.string().cuid(),
+      })
+    )
+    .query(async ({ input, ctx }): Promise<MessageDTO[]> => {
+      const { targetGroupId } = input;
       const { session, prisma } = ctx;
 
-      if (targetType === MessageTarget.User) {
-        const messages = await prisma.message.findMany({
-          where: {
-            OR: [
-              {
-                fromId: session.user.id,
-                targetUserId: targetId,
-              },
-              {
-                fromId: targetId,
-                targetUserId: session.user.id,
-              },
-            ],
+      // set all messages from this user to read
+      await prisma.conversation.update({
+        where: {
+          userId_targetType_targetGroupId: {
+            userId: session.user.id,
+            targetType: MessageTarget.Group,
+            targetGroupId,
           },
-          include: {
-            from: true,
-            targetUser: true,
-            targetGroup: true,
-          },
-          orderBy: {
-            createdAt: "asc",
-          },
-        });
-
-        return messages.map(toTargetDto);
-      }
+        },
+        data: {
+          unreadCount: 0,
+        },
+      });
 
       const groupMessages = await prisma.message.findMany({
         where: {
-          targetGroupId: targetId,
+          targetGroupId,
         },
         include: {
           from: true,

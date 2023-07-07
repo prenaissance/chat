@@ -42,9 +42,8 @@ const UserChat = () => {
 
   const [typedMessage, setTypedMessage] = useState("");
 
-  const messagesQuery = api.chat.getMessages.useQuery({
-    targetId: userId,
-    targetType: MessageTarget.User,
+  const messagesQuery = api.chat.getUserMessages.useQuery({
+    targetUserId: userId,
   });
   const sendMessageMutation = api.chat.sendUserMessage.useMutation({
     onSuccess: addMessage,
