@@ -9,10 +9,8 @@ import {
   Skeleton,
   IconButton,
   Input,
-  InputGroup,
 } from "@chakra-ui/react";
 import { MessageTarget } from "@prisma/client";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import {
   useEffect,
@@ -33,8 +31,9 @@ const UserChat = () => {
   const { messages, setMessages } = useChatStore(selector);
   const router = useRouter();
   const userId = router.query.id as string;
-  const session = useSession();
-  const sessionIsLoaded = session.status !== "loading";
+  const userQuery = api.users.getUser.useQuery({
+    id: userId,
+  });
 
   const [typedMessage, setTypedMessage] = useState("");
 
@@ -58,7 +57,7 @@ const UserChat = () => {
       setMessages(messagesQuery.data);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messagesQuery.isSuccess]);
+  }, [messagesQuery.isSuccess, userId]);
 
   return (
     <ChatLayout>
@@ -72,10 +71,10 @@ const UserChat = () => {
             shadow="lg"
             bgColor={useColorModeValue("white", "gray.800")}
           >
-            <UserAvatar user={session.data?.user} size="sm" isOnline />
-            <Skeleton isLoaded={sessionIsLoaded} w="min(12rem, 50%)">
+            <UserAvatar user={userQuery.data} size="sm" isOnline />
+            <Skeleton isLoaded={!userQuery.isLoading} w="min(12rem, 50%)">
               <chakra.h1 fontSize="xl">
-                {session.data?.user.name ?? "Placeholder Name"}
+                {userQuery.data?.name ?? "Placeholder Name"}
               </chakra.h1>
             </Skeleton>
             <IconButton

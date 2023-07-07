@@ -34,7 +34,8 @@ const UserAvatar = ({
       />
     </Avatar>
   ) : (
-    <SkeletonCircle {...props} size={size} />
+    // fix skeleton breakpoint size to match avatar size
+    <SkeletonCircle {...props} size={"2rem"} />
   );
 
 export default UserAvatar;
