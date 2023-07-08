@@ -10,7 +10,6 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { MessageTarget } from "@prisma/client";
-import Link from "next/link";
 import NextLink from "next/link";
 
 import { type RouterOutputs, api } from "~/utils/api";
@@ -35,9 +34,10 @@ const Conversation = ({
   data: RouterOutputs["conversations"]["getConversations"][number];
 }) => {
   const isUser = data.targetType === MessageTarget.User;
+  const lastMessageColor = useColorModeValue("gray.700", "gray.300");
 
   return (
-    <Link
+    <NextLink
       href={`/chat/${data.targetType.toLowerCase()}/${
         isUser ? data.targetUserId : data.targetGroupId
       }`}
@@ -65,10 +65,7 @@ const Conversation = ({
           </HStack>
           <HStack>
             {data.lastMessage && (
-              <Text
-                fontSize="sm"
-                color={useColorModeValue("gray.700", "gray.300")}
-              >
+              <Text fontSize="sm" color={lastMessageColor}>
                 {data.lastMessage.content}
               </Text>
             )}
@@ -90,7 +87,7 @@ const Conversation = ({
           </HStack>
         </Box>
       </HStack>
-    </Link>
+    </NextLink>
   );
 };
 

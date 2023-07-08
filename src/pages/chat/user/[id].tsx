@@ -74,8 +74,7 @@ const UserChat = () => {
     if (messagesQuery.isSuccess) {
       setMessages(messagesQuery.data);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messagesQuery.isSuccess, userId]);
+  }, [messagesQuery.isSuccess, userId, messagesQuery.data, setMessages]);
 
   return (
     <ChatLayout>
@@ -103,8 +102,8 @@ const UserChat = () => {
               icon={<InfoIcon />}
             />
           </HStack>
-          <Box height="calc(100%-3rem)" px={2} py={4}>
-            <Box height="calc(100%-2rem)" overflowY="scroll">
+          <Box height="calc(100% - 3rem)" px={2} py={4}>
+            <Box height="calc(100% - 2rem)" overflowY="auto">
               {messages.map((message) => (
                 <chakra.div key={message.id}>{message.content}</chakra.div>
               ))}

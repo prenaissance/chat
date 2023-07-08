@@ -12,6 +12,7 @@ type ChatState = {
 
 type ChatActions = {
   addMessage: (message: MessageDTO) => void;
+  addMessageToConversation: (message: MessageDTO) => void;
   setMessages: (messages: MessageDTO[]) => void;
   rollbackMessage: (message: MessageDTO) => void;
   pushConversation: (conversation: ConversationDto) => void;
@@ -27,6 +28,27 @@ export const useChatStore = create<ChatStore>((set) => ({
   messages: [],
   addMessage: (message) => {
     set((state) => ({ messages: [...state.messages, message] }));
+  },
+  addMessageToConversation: (message) => {
+    set((state) => {
+      const conversation = state.conversations.find(
+        (conversation) =>
+          conversation.targetUserId === message.targetUserId ||
+          conversation.targetGroupId === message.targetGroupId
+      );
+
+      if (!conversation) {
+        return state;
+      }
+
+      return {
+        conversations: state.conversations.map((c) =>
+          c.id === conversation.id
+            ? { ...c, lastMessage: message, unreadCount: c.unreadCount + 1 }
+            : c
+        ),
+      };
+    });
   },
   setMessages: (messages) => {
     set({ messages });

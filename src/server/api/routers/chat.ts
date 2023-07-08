@@ -211,13 +211,11 @@ export const chatRouter = createTRPCRouter({
       const { targetUserId } = input;
       const { session, prisma } = ctx;
       // set all messages from this user to read
-      await prisma.conversation.update({
+      await prisma.conversation.updateMany({
         where: {
-          userId_targetType_targetUserId: {
-            userId: session.user.id,
-            targetType: MessageTarget.User,
-            targetUserId,
-          },
+          userId: session.user.id,
+          targetUserId,
+          targetType: MessageTarget.User,
         },
         data: {
           unreadCount: 0,
@@ -261,13 +259,11 @@ export const chatRouter = createTRPCRouter({
       const { session, prisma } = ctx;
 
       // set all messages from this user to read
-      await prisma.conversation.update({
+      await prisma.conversation.updateMany({
         where: {
-          userId_targetType_targetGroupId: {
-            userId: session.user.id,
-            targetType: MessageTarget.Group,
-            targetGroupId,
-          },
+          userId: session.user.id,
+          targetGroupId,
+          targetType: MessageTarget.Group,
         },
         data: {
           unreadCount: 0,
