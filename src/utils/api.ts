@@ -8,6 +8,7 @@ import {
   createWSClient,
   httpBatchLink,
   loggerLink,
+  splitLink,
   wsLink,
 } from "@trpc/client";
 import { createTRPCNext } from "@trpc/next";
@@ -44,18 +45,23 @@ export const api = createTRPCNext<AppRouter>({
             process.env.NODE_ENV === "development" ||
             (opts.direction === "down" && opts.result instanceof Error),
         }),
-        httpBatchLink({
-          url: `${getBaseUrl()}/api/trpc`,
+        splitLink({
+          condition: (op) => op.type === "subscription",
+          true: wsLink({
+            client: createWSClient({
+              url: process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:3001",
+              onOpen() {
+                console.log("➕➕ ws link opened");
+              },
+              onClose() {
+                console.log("➖➖ ws link closed");
+              },
+            }),
+          }),
+          false: httpBatchLink({
+            url: `${getBaseUrl()}/api/trpc`,
+          }),
         }),
-        ...(isClient()
-          ? [
-              wsLink({
-                client: createWSClient({
-                  url: process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:3001",
-                }),
-              }),
-            ]
-          : []),
       ],
     };
   },

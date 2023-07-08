@@ -1,11 +1,5 @@
 import { z } from "zod";
-import {
-  type Message,
-  MessageSource,
-  MessageTarget,
-  type User,
-  type Group,
-} from "@prisma/client";
+import { MessageSource, MessageTarget } from "@prisma/client";
 import { observable } from "@trpc/server/observable";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -186,23 +180,23 @@ export const chatRouter = createTRPCRouter({
     }),
 
   onMessage: protectedProcedure.subscription(({ ctx }) => {
-    const { redis, session } = ctx;
+    const { subscriberRedis, session } = ctx;
 
     return observable<MessageDTO>((emitter) => {
-      // this approach is most likely not scalable, change later
-      const subscriber = redis.duplicate();
-      void subscriber.subscribe(RedisChannel.ChatMessages);
-
-      subscriber.on("message", (_channel, message) => {
+      const handler = (channel: string, message: string) => {
+        if (channel !== RedisChannel.ChatMessages) {
+          return;
+        }
         const messageData = JSON.parse(message) as MessageDTO;
-        if (messageData.from.id === session.user.id) {
+        // TODO: check if user is in group
+        if (messageData.targetUser?.id === session.user.id) {
           emitter.next(messageData);
         }
-      });
+      };
+      subscriberRedis.on("message", handler);
 
       return () => {
-        void subscriber.unsubscribe();
-        void subscriber.quit();
+        subscriberRedis.off("message", handler);
       };
     });
   }),

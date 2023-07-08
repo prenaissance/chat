@@ -25,10 +25,6 @@ const config = {
     "prettier",
   ],
   rules: {
-    "prettier/prettier": [
-      "error",
-      { endOfLine: "auto", semi: true, trailingComma: "es5" },
-    ],
     "@typescript-eslint/consistent-type-imports": [
       "warn",
       {

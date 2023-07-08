@@ -9,8 +9,15 @@ export enum RedisChannel {
 
 const globalForRedis = globalThis as unknown as {
   redis: Redis | undefined;
+  subscriberRedis: Redis | undefined;
 };
 
 export const redis = globalForRedis.redis ?? new Redis(env.REDIS_URL);
-
-if (env.NODE_ENV !== "production") globalForRedis.redis = redis;
+const subscriberRedis =
+  globalForRedis.subscriberRedis ?? new Redis(env.REDIS_URL);
+void subscriberRedis.subscribe(RedisChannel.ChatMessages);
+export { subscriberRedis };
+if (env.NODE_ENV !== "production") {
+  globalForRedis.redis = redis;
+  globalForRedis.subscriberRedis = subscriberRedis;
+}

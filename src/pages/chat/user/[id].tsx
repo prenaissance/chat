@@ -11,7 +11,6 @@ import {
   IconButton,
   Input,
 } from "@chakra-ui/react";
-import { MessageTarget } from "@prisma/client";
 import { useRouter } from "next/router";
 import { shallow } from "zustand/shallow";
 
@@ -45,9 +44,14 @@ const UserChat = () => {
 
   const [typedMessage, setTypedMessage] = useState("");
 
-  const messagesQuery = api.chat.getUserMessages.useQuery({
-    targetUserId: userId,
-  });
+  const messagesQuery = api.chat.getUserMessages.useQuery(
+    {
+      targetUserId: userId,
+    },
+    {
+      enabled: !!userId,
+    }
+  );
   const sendMessageMutation = api.chat.sendUserMessage.useMutation({
     onSuccess: addMessage,
   });
@@ -99,8 +103,8 @@ const UserChat = () => {
               icon={<InfoIcon />}
             />
           </HStack>
-          <Flex direction="column" flexGrow={1} px={2} py={4}>
-            <Box flexGrow={1} overflowY="auto">
+          <Box height="calc(100%-3rem)" px={2} py={4}>
+            <Box height="calc(100%-2rem)" overflowY="scroll">
               {messages.map((message) => (
                 <chakra.div key={message.id}>{message.content}</chakra.div>
               ))}
@@ -127,11 +131,10 @@ const UserChat = () => {
                 type="submit"
                 aria-label="Send message"
                 icon={<ArrowForwardIcon />}
-                onClick={handleSendMessage}
                 disabled={!typedMessage}
               />
             </chakra.form>
-          </Flex>
+          </Box>
         </Flex>
         <Show above="xl">
           <chakra.aside

@@ -1,4 +1,4 @@
-import { User, MessageTarget, Group } from "@prisma/client";
+import { type User, MessageTarget, type Group } from "@prisma/client";
 
 export type TargetInput =
   | {

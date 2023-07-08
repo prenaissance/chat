@@ -15,7 +15,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { getServerAuthSession } from "~/server/auth";
 import { prisma } from "~/server/db";
-import { redis } from "~/server/redis";
+import { redis, subscriberRedis } from "~/server/redis";
 import { parseCookies } from "~/utils/cookies";
 
 /**
@@ -30,6 +30,7 @@ type CreateContextOptions = {
   session: Session | null;
   prisma?: typeof prisma;
   redis?: typeof redis;
+  subscriberRedis?: typeof subscriberRedis;
 };
 
 /**
@@ -47,6 +48,7 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
     session: opts.session,
     prisma: opts.prisma ?? prisma,
     redis: opts.redis ?? redis,
+    subscriberRedis: opts.subscriberRedis ?? subscriberRedis,
   };
 };
 
@@ -66,6 +68,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
     session,
     prisma,
     redis,
+    subscriberRedis,
   });
 };
 
