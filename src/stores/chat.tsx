@@ -8,6 +8,7 @@ type ConversationDto =
 type ChatState = {
   conversations: ConversationDto[];
   messages: MessageDTO[];
+  isLoadingMessages: boolean;
 };
 
 type ChatActions = {
@@ -26,6 +27,7 @@ export type ChatStore = ChatState & ChatActions;
 export const useChatStore = create<ChatStore>((set) => ({
   conversations: [],
   messages: [],
+  isLoadingMessages: false,
   addMessage: (message) => {
     set((state) => ({ messages: [...state.messages, message] }));
   },
