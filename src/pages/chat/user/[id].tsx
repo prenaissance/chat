@@ -18,24 +18,29 @@ import ChatLayout from "~/components/chat/ChatLayout";
 import UserAvatar from "~/components/common/UserAvatar";
 import { type ChatStore, useChatStore } from "~/stores/chat";
 import { api } from "~/utils/api";
+import ChatMessages from "~/components/chat/chat-messages";
 
 const selector = ({
-  messages,
   setMessages,
   addMessage,
+  setIsLoadingMessages,
   rollbackMessage,
   readUserConversation,
 }: ChatStore) => ({
-  messages,
   setMessages,
   addMessage,
+  setIsLoadingMessages,
   rollbackMessage,
   readUserConversation,
 });
 
 const UserChat = () => {
-  const { messages, setMessages, addMessage, readUserConversation } =
-    useChatStore(selector, shallow);
+  const {
+    setMessages,
+    addMessage,
+    readUserConversation,
+    setIsLoadingMessages,
+  } = useChatStore(selector, shallow);
   const router = useRouter();
   const userId = router.query.id as string;
   const userQuery = api.users.getUser.useQuery({
@@ -73,8 +78,15 @@ const UserChat = () => {
   useEffect(() => {
     if (messagesQuery.isSuccess) {
       setMessages(messagesQuery.data);
+      setIsLoadingMessages(false);
     }
-  }, [messagesQuery.isSuccess, userId, messagesQuery.data, setMessages]);
+  }, [
+    messagesQuery.isSuccess,
+    userId,
+    messagesQuery.data,
+    setMessages,
+    setIsLoadingMessages,
+  ]);
 
   return (
     <ChatLayout>
@@ -102,12 +114,8 @@ const UserChat = () => {
               icon={<InfoIcon />}
             />
           </HStack>
-          <Box height="calc(100% - 3rem)" px={2} py={4}>
-            <Box height="calc(100% - 2rem)" overflowY="auto">
-              {messages.map((message) => (
-                <chakra.div key={message.id}>{message.content}</chakra.div>
-              ))}
-            </Box>
+          <Box h="calc(100% - 3rem)" px={2} py={4}>
+            <ChatMessages h="calc(100% - 2rem)" overflowY="auto" />
             <chakra.form
               h={8}
               onSubmit={(e) => {

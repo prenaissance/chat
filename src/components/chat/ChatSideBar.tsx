@@ -65,7 +65,7 @@ const Conversation = ({
           </HStack>
           <HStack>
             {data.lastMessage && (
-              <Text fontSize="sm" color={lastMessageColor}>
+              <Text noOfLines={1} fontSize="sm" color={lastMessageColor}>
                 {data.lastMessage.content}
               </Text>
             )}

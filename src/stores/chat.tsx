@@ -15,6 +15,7 @@ type ChatActions = {
   addMessage: (message: MessageDTO) => void;
   addMessageToConversation: (message: MessageDTO) => void;
   setMessages: (messages: MessageDTO[]) => void;
+  setIsLoadingMessages: (isLoading: boolean) => void;
   rollbackMessage: (message: MessageDTO) => void;
   pushConversation: (conversation: ConversationDto) => void;
   setConversations: (conversations: ConversationDto[]) => void;
@@ -27,7 +28,7 @@ export type ChatStore = ChatState & ChatActions;
 export const useChatStore = create<ChatStore>((set) => ({
   conversations: [],
   messages: [],
-  isLoadingMessages: false,
+  isLoadingMessages: true,
   addMessage: (message) => {
     set((state) => ({ messages: [...state.messages, message] }));
   },
@@ -51,6 +52,9 @@ export const useChatStore = create<ChatStore>((set) => ({
         ),
       };
     });
+  },
+  setIsLoadingMessages: (isLoading) => {
+    set({ isLoadingMessages: isLoading });
   },
   setMessages: (messages) => {
     set({ messages });

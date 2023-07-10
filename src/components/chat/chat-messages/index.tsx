@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Box, type BoxProps } from "@chakra-ui/react";
+import { Box, Stack, type BoxProps } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 
 import { type ChatStore, useChatStore } from "~/stores/chat";
@@ -54,11 +54,11 @@ export const ChatMessages = (props: BoxProps) => {
     return <ChatMessagesSkeleton {...props} />;
   }
   return (
-    <Box {...props}>
+    <Stack {...props} gap={1}>
       {messageGroups.map((group, index) => (
         <ChatMessageGroup key={index} {...group} />
       ))}
-    </Box>
+    </Stack>
   );
 };
 
