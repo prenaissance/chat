@@ -19,6 +19,7 @@ import UserAvatar from "~/components/common/UserAvatar";
 import { type ChatStore, useChatStore } from "~/stores/chat";
 import { api } from "~/utils/api";
 import ChatMessages from "~/components/chat/chat-messages";
+import UserCard from "~/components/common/UserCard";
 
 const selector = ({
   setMessages,
@@ -145,11 +146,20 @@ const UserChat = () => {
         </Flex>
         <Show above="xl">
           <chakra.aside
+            display="flex"
+            // alignItems="center"
             w={80}
             h="100%"
             borderLeft="1px solid"
             borderColor={useColorModeValue("gray.400", "gray.600")}
-          ></chakra.aside>
+          >
+            <UserCard
+              m={2}
+              user={userQuery.data}
+              isOnline
+              showActions={false}
+            />
+          </chakra.aside>
         </Show>
       </Flex>
     </ChatLayout>
