@@ -19,12 +19,13 @@ const ChatMessageGroup = ({ messages, user, isSelf }: MessageGroup) => {
   const otherColor = useColorModeValue("gray.300", "gray.700");
 
   if (messages.length === 0) return null;
+  const avatar = <UserAvatar user={user} size="sm" justifySelf="flex-end" />;
   return (
-    <Flex alignItems="flex-end">
-      <UserAvatar user={user} size="sm" justifySelf="flex-end" />
+    <Flex alignItems="flex-end" px={2}>
+      {!isSelf && avatar}
       <Stack
         flexGrow={1}
-        ml={2}
+        mx={2}
         position="relative"
         spacing={1}
         _before={{
@@ -34,7 +35,9 @@ const ChatMessageGroup = ({ messages, user, isSelf }: MessageGroup) => {
           maskSize: "contain",
           position: "absolute",
           bottom: 0,
-          left: "-6px",
+          left: isSelf ? undefined : "-6px",
+          right: isSelf ? "6px" : undefined,
+          scaleX: isSelf ? 1 : -1,
           height: "6px",
           width: "6px",
           bgColor: isSelf ? selfColor : otherColor,
@@ -51,12 +54,13 @@ const ChatMessageGroup = ({ messages, user, isSelf }: MessageGroup) => {
             borderBottomRightRadius="md"
             bgColor={isSelf ? selfColor : otherColor}
             px={2}
+            alignSelf={isSelf ? "flex-end" : "flex-start"}
             _first={{
               borderTopRadius: "lg",
             }}
             _last={{
-              borderBottomRightRadius: "lg",
-              borderBottomLeftRadius: "none",
+              borderBottomRightRadius: isSelf ? "none" : "lg",
+              borderBottomLeftRadius: isSelf ? "lg" : "none",
             }}
           >
             <Text>
@@ -64,13 +68,14 @@ const ChatMessageGroup = ({ messages, user, isSelf }: MessageGroup) => {
               <MessageMeta
                 createdAt={message.createdAt}
                 isSent={message.isSent}
-                isRead={false}
+                isRead={true}
                 isSelf={isSelf}
               />
             </Text>
           </Box>
         ))}
       </Stack>
+      {isSelf && avatar}
     </Flex>
   );
 };
