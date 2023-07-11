@@ -3,6 +3,7 @@ import { chatRouter } from "./routers/chat";
 import { correspondentsRouter } from "./routers/correspondents";
 import { conversationsRouter } from "./routers/conversations";
 import { usersRouter } from "./routers/users";
+import { friendsRouter } from "./routers/friends";
 
 /**
  * This is the primary router for your server.
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
   chat: chatRouter,
   users: usersRouter,
   correspondents: correspondentsRouter,
+  friends: friendsRouter,
   conversations: conversationsRouter,
 });
 

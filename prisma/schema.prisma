@@ -43,20 +43,22 @@ model Session {
 }
 
 model User {
-    id                  String         @id @default(cuid())
-    name                String
-    email               String?        @unique
-    emailVerified       DateTime?
-    image               String?
-    createdAt           DateTime       @default(now())
-    accounts            Account[]
-    sessions            Session[]
-    groups              Group[]
-    sentMessages        Message[]      @relation("SentMessages")
-    readMessages        Message[]      @relation("ReadMessages")
-    receivedMessages    Message[]      @relation("UserMessages")
-    conversations       Conversation[] @relation("UserConversations")
-    targetConversations Conversation[] @relation("UserTargetConversations")
+    id                     String          @id @default(cuid())
+    name                   String
+    email                  String?         @unique
+    emailVerified          DateTime?
+    image                  String?
+    createdAt              DateTime        @default(now())
+    accounts               Account[]
+    sessions               Session[]
+    groups                 Group[]
+    sentMessages           Message[]       @relation("SentMessages")
+    readMessages           Message[]       @relation("ReadMessages")
+    receivedMessages       Message[]       @relation("UserMessages")
+    conversations          Conversation[]  @relation("UserConversations")
+    targetConversations    Conversation[]  @relation("UserTargetConversations")
+    sentFriendRequests     FriendRequest[] @relation("SentFriendRequests")
+    receivedFriendRequests FriendRequest[] @relation("ReceivedFriendRequests")
 }
 
 model VerificationToken {
@@ -75,6 +77,20 @@ enum MessageSource {
 enum MessageTarget {
     User
     Group
+}
+
+model FriendRequest {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    fromId    String
+    from      User     @relation("SentFriendRequests", fields: [fromId], references: [id])
+    toId      String
+    to        User     @relation("ReceivedFriendRequests", fields: [toId], references: [id])
+    accepted  Boolean  @default(false)
+
+    @@unique([fromId, toId])
+    @@index([fromId])
+    @@index([toId])
 }
 
 model Group {
