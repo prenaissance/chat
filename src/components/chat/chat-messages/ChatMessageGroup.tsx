@@ -1,8 +1,14 @@
 import { Box, Text, Flex, Stack, useColorModeValue } from "@chakra-ui/react";
 import { type Session } from "next-auth";
-import UserAvatar from "../../common/UserAvatar";
 
+import UserAvatar from "../../common/UserAvatar";
 import MessageMeta from "./MessageMeta";
+
+const URL_ENCODED_CHAT_TAIL_LEFT =
+  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMycgaGVpZ2h0PSczJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxwYXRoIGZpbGw9J2JsYWNrJyBkPSdtIDAgMyBMIDMgMyBMIDMgMCBDIDMgMSAxIDMgMCAzJy8+PC9zdmc+";
+
+const URL_ENCODED_CHAT_TAIL_RIGHT =
+  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMycgaGVpZ2h0PSczJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxwYXRoIGZpbGw9J2JsYWNrJyBkPSdtIDAgMyBMIDEgMyBMIDMgMyBDIDIgMyAwIDEgMCAwJy8+PC9zdmc+";
 
 export type MessageGroup = {
   messages: {
@@ -29,15 +35,15 @@ const ChatMessageGroup = ({ messages, user, isSelf }: MessageGroup) => {
         position="relative"
         spacing={1}
         _before={{
-          maskImage:
-            "url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMycgaGVpZ2h0PSczJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxwYXRoIGZpbGw9J2JsYWNrJyBkPSdtIDAgMyBMIDMgMyBMIDMgMCBDIDMgMSAxIDMgMCAzJy8+PC9zdmc+)",
+          maskImage: `url(${
+            isSelf ? URL_ENCODED_CHAT_TAIL_RIGHT : URL_ENCODED_CHAT_TAIL_LEFT
+          })`,
           content: "''",
           maskSize: "contain",
           position: "absolute",
           bottom: 0,
           left: isSelf ? undefined : "-6px",
-          right: isSelf ? "6px" : undefined,
-          scaleX: isSelf ? 1 : -1,
+          right: isSelf ? "-6px" : undefined,
           height: "6px",
           width: "6px",
           bgColor: isSelf ? selfColor : otherColor,
