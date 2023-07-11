@@ -27,9 +27,14 @@ import { HamburgerIcon, CloseIcon, SunIcon, MoonIcon } from "@chakra-ui/icons";
 import { signIn, signOut, useSession } from "next-auth/react";
 import CorrespondentsSearch from "./correspondents-search";
 
-const Links = ["Chat"];
+const links = [
+  {
+    name: "Chat",
+    href: "/chat",
+  },
+];
 
-const NavLink = ({ children }: { children: ReactNode }) => (
+const NavLink = ({ children, href }: { children: ReactNode; href: string }) => (
   <Link
     as={NextLink}
     px={2}
@@ -39,7 +44,7 @@ const NavLink = ({ children }: { children: ReactNode }) => (
       textDecoration: "none",
       bg: useColorModeValue("gray.200", "gray.700"),
     }}
-    href="#"
+    href={href}
   >
     {children}
   </Link>
@@ -113,6 +118,7 @@ const NavBar = (props: ChakraProps) => {
 
   return (
     <chakra.nav
+      zIndex="popover"
       w="100%"
       position="sticky"
       top={0}
@@ -133,8 +139,10 @@ const NavBar = (props: ChakraProps) => {
         <HStack spacing={8} alignItems="center">
           <Box>Logo</Box>
           <HStack as="nav" spacing={4} display={{ base: "none", md: "flex" }}>
-            {Links.map((link) => (
-              <NavLink key={link}>{link}</NavLink>
+            {links.map(({ name, href }) => (
+              <NavLink key={href} href={href}>
+                {name}
+              </NavLink>
             ))}
             <CorrespondentsSearch />
           </HStack>
@@ -145,8 +153,10 @@ const NavBar = (props: ChakraProps) => {
       <Collapse in={isOpen} animateOpacity>
         <Box pb={4} display={{ md: "none" }}>
           <Stack as="nav" spacing={4}>
-            {Links.map((link) => (
-              <NavLink key={link}>{link}</NavLink>
+            {links.map(({ name, href }) => (
+              <NavLink key={href} href={href}>
+                {name}
+              </NavLink>
             ))}
           </Stack>
         </Box>
