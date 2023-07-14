@@ -104,6 +104,7 @@ export const friendsRouter = createTRPCRouter({
 
       return friendRequest;
     }),
+
   cancelFriendRequest: protectedProcedure
     .input(
       z.object({
@@ -129,8 +130,8 @@ export const friendsRouter = createTRPCRouter({
         });
       }
     }),
-  rejectFriendRequest: protectedProcedure
 
+  rejectFriendRequest: protectedProcedure
     .input(
       z.object({
         targetUserId: z.string().cuid(),
