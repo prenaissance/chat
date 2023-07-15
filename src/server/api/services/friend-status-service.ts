@@ -67,4 +67,6 @@ export const getFriendStatusForUser = (
   if (sentFriendRequest) {
     return FriendStatus.Sent;
   }
+
+  return FriendStatus.None;
 };
