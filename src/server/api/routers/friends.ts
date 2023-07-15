@@ -2,56 +2,57 @@ import { z } from "zod";
 import { type PrismaClient } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { FriendStatus } from "~/shared/dtos/friends";
 
-const arePendingFriends = async (
+const getFriendStatus = async (
   prisma: PrismaClient,
-  userId1: string,
-  userId2: string
+  userId: string,
+  targetUserId: string
 ) => {
-  const friendShip = await prisma.friendRequest.findFirst({
+  const receivedFriendRequest = await prisma.friendRequest.findFirst({
     where: {
-      OR: [
-        {
-          fromId: userId1,
-          toId: userId2,
-        },
-        {
-          fromId: userId2,
-          toId: userId1,
-        },
-      ],
+      fromId: targetUserId,
+      toId: userId,
     },
   });
 
-  return friendShip !== null;
-};
-
-const areFriends = async (
-  prisma: PrismaClient,
-  userId1: string,
-  userId2: string
-) => {
-  const friendShip = await prisma.friendRequest.findFirst({
+  const sentFriendRequest = await prisma.friendRequest.findFirst({
     where: {
-      OR: [
-        {
-          fromId: userId1,
-          toId: userId2,
-          accepted: true,
-        },
-        {
-          fromId: userId2,
-          toId: userId1,
-          accepted: true,
-        },
-      ],
+      fromId: userId,
+      toId: targetUserId,
     },
   });
 
-  return friendShip !== null;
+  if (receivedFriendRequest?.accepted || sentFriendRequest?.accepted) {
+    return FriendStatus.Friends;
+  }
+
+  if (receivedFriendRequest) {
+    return FriendStatus.Received;
+  }
+
+  if (sentFriendRequest) {
+    return FriendStatus.Sent;
+  }
+
+  return FriendStatus.None;
 };
 
 export const friendsRouter = createTRPCRouter({
+  getFriendStatus: protectedProcedure
+    .input(
+      z.object({
+        targetUserId: z.string().cuid(),
+      })
+    )
+    .query(({ input, ctx }) => {
+      const { targetUserId } = input;
+      const { session, prisma } = ctx;
+      const userId = session.user.id;
+
+      return getFriendStatus(prisma, userId, targetUserId);
+    }),
+
   addFriend: protectedProcedure
     .input(
       z.object({
@@ -61,17 +62,23 @@ export const friendsRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const { targetUserId } = input;
       const { session, prisma } = ctx;
-      if (await areFriends(prisma, session.user.id, targetUserId)) {
+      const friendStatus = await getFriendStatus(
+        prisma,
+        session.user.id,
+        targetUserId
+      );
+
+      if (friendStatus === FriendStatus.Friends) {
         throw new TRPCError({
-          message: "You are already friends with this user",
           code: "BAD_REQUEST",
+          message: "You are already friends",
         });
       }
 
-      if (await arePendingFriends(prisma, session.user.id, targetUserId)) {
+      if (friendStatus === FriendStatus.Sent) {
         throw new TRPCError({
-          message: "You already have a pending friend request",
-          code: "CONFLICT",
+          code: "BAD_REQUEST",
+          message: "You have already sent a friend request",
         });
       }
 
@@ -115,20 +122,27 @@ export const friendsRouter = createTRPCRouter({
       const { targetUserId } = input;
       const { session, prisma } = ctx;
 
-      const friendRequest = await prisma.friendRequest.findFirst({
+      const friendStatus = await getFriendStatus(
+        prisma,
+        session.user.id,
+        targetUserId
+      );
+
+      if (friendStatus !== FriendStatus.Sent) {
+        throw new TRPCError({
+          message: "You haven't sent a friend request",
+          code: "NOT_FOUND",
+        });
+      }
+
+      const friendRequest = await prisma.friendRequest.deleteMany({
         where: {
           fromId: session.user.id,
           toId: targetUserId,
           accepted: false,
         },
       });
-
-      if (!friendRequest) {
-        throw new TRPCError({
-          message: "You don't have a pending friend request",
-          code: "NOT_FOUND",
-        });
-      }
+      return friendRequest;
     }),
 
   rejectFriendRequest: protectedProcedure
@@ -141,6 +155,18 @@ export const friendsRouter = createTRPCRouter({
       const { targetUserId } = input;
       const { session, prisma } = ctx;
 
+      const friendStatus = await getFriendStatus(
+        prisma,
+        session.user.id,
+        targetUserId
+      );
+
+      if (friendStatus !== FriendStatus.Received) {
+        throw new TRPCError({
+          message: "You haven't received a friend request",
+          code: "NOT_FOUND",
+        });
+      }
       const friendRequest = await prisma.friendRequest.findFirst({
         where: {
           fromId: targetUserId,
@@ -149,16 +175,9 @@ export const friendsRouter = createTRPCRouter({
         },
       });
 
-      if (!friendRequest) {
-        throw new TRPCError({
-          message: "You don't have a pending friend request",
-          code: "NOT_FOUND",
-        });
-      }
-
       return await prisma.friendRequest.delete({
         where: {
-          id: friendRequest.id,
+          id: friendRequest?.id,
         },
       });
     }),
@@ -173,6 +192,19 @@ export const friendsRouter = createTRPCRouter({
       const { targetUserId } = input;
       const { session, prisma } = ctx;
 
+      const friendStatus = await getFriendStatus(
+        prisma,
+        session.user.id,
+        targetUserId
+      );
+
+      if (friendStatus !== FriendStatus.Received) {
+        throw new TRPCError({
+          message: "You haven't received a friend request",
+          code: "NOT_FOUND",
+        });
+      }
+
       const friendRequest = await prisma.friendRequest.findFirst({
         where: {
           fromId: targetUserId,
@@ -180,17 +212,9 @@ export const friendsRouter = createTRPCRouter({
           accepted: false,
         },
       });
-
-      if (!friendRequest) {
-        throw new TRPCError({
-          message: "You don't have a pending friend request",
-          code: "NOT_FOUND",
-        });
-      }
-
       return await prisma.friendRequest.update({
         where: {
-          id: friendRequest.id,
+          id: friendRequest?.id,
         },
         data: {
           accepted: true,
