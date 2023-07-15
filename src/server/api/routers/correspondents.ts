@@ -1,35 +1,7 @@
 import { omit } from "~/utils/reflections";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
-import { type FriendRequest, type User } from "@prisma/client";
-
-type UserWithFriendRequests = User & {
-  receivedFriendRequests: FriendRequest[];
-  sentFriendRequests: FriendRequest[];
-};
-
-type FriendStatus = "none" | "pending" | "friends";
-
-const getFriendStatus = (
-  user: UserWithFriendRequests,
-  userId: string
-): FriendStatus => {
-  const receivedFriendRequest = user.receivedFriendRequests.find(
-    (friendRequest) => friendRequest.fromId === userId
-  );
-  const sentFriendRequest = user.sentFriendRequests.find(
-    (friendRequest) => friendRequest.toId === userId
-  );
-
-  if (receivedFriendRequest?.accepted || sentFriendRequest?.accepted) {
-    return "friends";
-  }
-
-  if (receivedFriendRequest) {
-    return "pending";
-  }
-  return "none";
-};
+import { getFriendStatusForUser } from "../services/friend-status-service";
 
 export const correspondentsRouter = createTRPCRouter({
   search: protectedProcedure
@@ -76,7 +48,7 @@ export const correspondentsRouter = createTRPCRouter({
       return {
         users: users.map((user) => ({
           ...omit(user, ["receivedFriendRequests", "sentFriendRequests"]),
-          friendStatus: getFriendStatus(user, userId),
+          friendStatus: getFriendStatusForUser(user, userId),
         })),
         groups,
       };

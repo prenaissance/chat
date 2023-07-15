@@ -1,42 +1,8 @@
 import { z } from "zod";
-import { type PrismaClient } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { FriendStatus } from "~/shared/dtos/friends";
-
-const getFriendStatus = async (
-  prisma: PrismaClient,
-  userId: string,
-  targetUserId: string
-) => {
-  const receivedFriendRequest = await prisma.friendRequest.findFirst({
-    where: {
-      fromId: targetUserId,
-      toId: userId,
-    },
-  });
-
-  const sentFriendRequest = await prisma.friendRequest.findFirst({
-    where: {
-      fromId: userId,
-      toId: targetUserId,
-    },
-  });
-
-  if (receivedFriendRequest?.accepted || sentFriendRequest?.accepted) {
-    return FriendStatus.Friends;
-  }
-
-  if (receivedFriendRequest) {
-    return FriendStatus.Received;
-  }
-
-  if (sentFriendRequest) {
-    return FriendStatus.Sent;
-  }
-
-  return FriendStatus.None;
-};
+import { getFriendStatus } from "../services/friend-status-service";
 
 export const friendsRouter = createTRPCRouter({
   getFriendStatus: protectedProcedure
