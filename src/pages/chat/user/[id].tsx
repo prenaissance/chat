@@ -153,12 +153,7 @@ const UserChat = () => {
             borderLeft="1px solid"
             borderColor={useColorModeValue("gray.400", "gray.600")}
           >
-            <UserCard
-              m={2}
-              user={userQuery.data}
-              isOnline
-              showActions={false}
-            />
+            <UserCard m={2} user={userQuery.data} showActions={false} />
           </chakra.aside>
         </Show>
       </Flex>

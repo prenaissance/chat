@@ -8,7 +8,7 @@ import {
 import { type Session } from "next-auth";
 
 type Props = {
-  user?: Omit<Session["user"], "email">;
+  user?: Omit<Session["user"], "email"> & { isOnline?: boolean };
   isOnline?: boolean;
   size?: AvatarProps["size"];
   badgeBorderColor?: ChakraProps["borderColor"];
@@ -16,7 +16,7 @@ type Props = {
 
 const UserAvatar = ({
   user,
-  isOnline = true,
+  isOnline,
   size = "md",
   badgeBorderColor,
   ...props
@@ -29,7 +29,7 @@ const UserAvatar = ({
     >
       <AvatarBadge
         boxSize="1em"
-        bg={isOnline ? "green.500" : "gray.500"}
+        bg={isOnline ?? user.isOnline ?? false ? "green.500" : "gray.500"}
         borderColor={badgeBorderColor}
       />
     </Avatar>

@@ -15,17 +15,12 @@ import NextLink from "next/link";
 import UserAvatar from "./UserAvatar";
 
 type Props = {
-  user?: Session["user"];
+  user?: Session["user"] & { isOnline?: boolean };
   isOnline?: boolean;
   showActions?: boolean;
 } & ChakraProps;
 
-const UserCard = ({
-  user,
-  isOnline = true,
-  showActions = true,
-  ...props
-}: Props) => {
+const UserCard = ({ user, isOnline, showActions = true, ...props }: Props) => {
   const buttonColor = useColorModeValue("teal.300", "teal.900");
   const buttonHoverColor = useColorModeValue("teal.400", "teal.800");
 
@@ -41,7 +36,7 @@ const UserCard = ({
       <CardHeader p={2}>
         <UserAvatar
           user={user}
-          isOnline={isOnline}
+          isOnline={isOnline ?? user?.isOnline ?? false}
           size="lg"
           badgeBorderColor={useColorModeValue("gray.300", "gray.700")}
         />

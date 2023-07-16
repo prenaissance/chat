@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { mapOnlineStatus } from "../services/online-service";
 
 export const usersRouter = createTRPCRouter({
   getUser: protectedProcedure
@@ -26,6 +27,6 @@ export const usersRouter = createTRPCRouter({
         });
       }
 
-      return user;
+      return mapOnlineStatus(user);
     }),
 });

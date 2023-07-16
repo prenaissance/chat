@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { FriendStatus } from "~/shared/dtos/friends";
 import { getFriendStatus } from "../services/friend-status-service";
+import { mapOnlineStatus } from "../services/online-service";
 
 export const friendsRouter = createTRPCRouter({
   getFriends: protectedProcedure.query(async ({ ctx }) => {
@@ -30,7 +31,7 @@ export const friendsRouter = createTRPCRouter({
       },
     });
 
-    return friends;
+    return friends.map(mapOnlineStatus);
   }),
   getFriendStatus: protectedProcedure
     .input(

@@ -1,5 +1,7 @@
 import { toTargetDto } from "~/shared/dtos/target";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { MessageTarget } from "@prisma/client";
+import { mapOnlineStatus } from "../services/online-service";
 
 export const conversationsRouter = createTRPCRouter({
   getConversations: protectedProcedure.query(async ({ ctx }) => {
@@ -22,6 +24,16 @@ export const conversationsRouter = createTRPCRouter({
       },
     });
 
-    return conversations.map(toTargetDto);
+    return conversations.map(toTargetDto).map((conversation) => {
+      if (conversation.targetType === MessageTarget.Group) {
+        return conversation;
+      }
+
+      const { targetUser } = conversation;
+      return {
+        ...conversation,
+        targetUser: mapOnlineStatus(targetUser),
+      };
+    });
   }),
 });
