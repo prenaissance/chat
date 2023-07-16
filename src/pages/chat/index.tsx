@@ -1,7 +1,23 @@
-import { Flex, Show, Text, chakra, useColorModeValue } from "@chakra-ui/react";
+import {
+  Flex,
+  HStack,
+  IconButton,
+  Show,
+  Text,
+  chakra,
+  useColorModeValue,
+} from "@chakra-ui/react";
+import { AiOutlineSend } from "react-icons/ai";
+import NextLink from "next/link";
+
 import ChatLayout from "~/components/chat/ChatLayout";
+import UserAvatar from "~/components/common/UserAvatar";
+import { api } from "~/utils/api";
 
 const Chat = () => {
+  const friendsQuery = api.friends.getFriends.useQuery();
+  const friends = friendsQuery.data ?? [];
+
   return (
     <ChatLayout>
       <Flex h="100%" w="100%">
@@ -16,14 +32,32 @@ const Chat = () => {
         </Flex>
         <Show above="xl">
           <chakra.aside
-            display="flex"
-            // alignItems="center"
             w={80}
             h="100%"
             borderLeft="1px solid"
             borderColor={useColorModeValue("gray.400", "gray.600")}
           >
-            Online friends WIP
+            {friends.map((friend) => (
+              <HStack
+                key={friend.id}
+                w="100%"
+                px={4}
+                py={2}
+                alignItems="center"
+              >
+                <UserAvatar user={friend} size="sm" />
+                <Text>{friend.name}</Text>
+                <IconButton
+                  ml="auto"
+                  as={NextLink}
+                  href={`/chat/user/${friend.id}`}
+                  aria-label={`Open chat with ${friend.name}`}
+                  icon={<AiOutlineSend />}
+                  rounded="md"
+                  size="sm"
+                />
+              </HStack>
+            ))}
           </chakra.aside>
         </Show>
       </Flex>

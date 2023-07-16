@@ -5,6 +5,33 @@ import { FriendStatus } from "~/shared/dtos/friends";
 import { getFriendStatus } from "../services/friend-status-service";
 
 export const friendsRouter = createTRPCRouter({
+  getFriends: protectedProcedure.query(async ({ ctx }) => {
+    const { session, prisma } = ctx;
+    const friends = await prisma.user.findMany({
+      where: {
+        OR: [
+          {
+            sentFriendRequests: {
+              some: {
+                toId: session.user.id,
+                accepted: true,
+              },
+            },
+          },
+          {
+            receivedFriendRequests: {
+              some: {
+                fromId: session.user.id,
+                accepted: true,
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    return friends;
+  }),
   getFriendStatus: protectedProcedure
     .input(
       z.object({
