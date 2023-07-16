@@ -16,7 +16,7 @@ export type MessageGroup = {
     createdAt: Date;
     isSent: boolean;
   }[];
-  user: Session["user"];
+  user: Session["user"] & { isOnline: boolean };
   isSelf: boolean;
 };
 

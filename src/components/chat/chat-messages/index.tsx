@@ -13,7 +13,11 @@ const ChatMessagesSkeleton = (props: BoxProps) => (
   <Box {...props}>Placeholder</Box>
 );
 
-export const ChatMessages = (props: BoxProps) => {
+type Props = BoxProps & {
+  isTargetOnline?: boolean;
+};
+
+export const ChatMessages = ({ isTargetOnline = false, ...props }: Props) => {
   const messages = useChatStore(messagesSelector);
   const isLoadingMessages = useChatStore(isLoadingMessagesSelector);
   const session = useSession();
@@ -40,7 +44,7 @@ export const ChatMessages = (props: BoxProps) => {
               isSent: true,
             },
           ],
-          user: pick(message.from, ["id", "name", "image"]),
+          user: pick(message.from, ["id", "name", "image", "isOnline"]),
           isSelf: message.fromId === session.data?.user?.id,
         });
       }

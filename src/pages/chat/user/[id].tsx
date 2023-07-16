@@ -58,6 +58,7 @@ const UserChat = () => {
       enabled: !!userId,
     }
   );
+
   const sendMessageMutation = api.chat.sendUserMessage.useMutation({
     onSuccess: addMessage,
   });
@@ -101,7 +102,7 @@ const UserChat = () => {
             shadow="lg"
             bgColor={useColorModeValue("white", "gray.800")}
           >
-            <UserAvatar user={userQuery.data} size="sm" isOnline />
+            <UserAvatar user={userQuery.data} size="sm" />
             <Skeleton isLoaded={!userQuery.isLoading} w="min(12rem, 50%)">
               <chakra.h1 fontSize="xl">
                 {userQuery.data?.name ?? "Placeholder Name"}

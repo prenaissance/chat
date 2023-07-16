@@ -97,8 +97,8 @@ const ChatSideBar = () => {
 
   if (conversationsQuery.isLoading) {
     return (
-      <StyledStack>
-        {new Array(3).fill(0).map((_, i) => (
+      <StyledStack overflowY="hidden">
+        {new Array(10).fill(0).map((_, i) => (
           <HStack key={i}>
             <SkeletonCircle />
             <Stack gap={2}>

@@ -6,6 +6,7 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { RedisChannel } from "~/server/redis";
 import { type MessageDTO } from "~/shared/dtos/chat";
 import { toTargetDto } from "~/shared/dtos/target";
+import { mapOnlineStatus } from "../services/online-service";
 
 export const chatRouter = createTRPCRouter({
   sendUserMessage: protectedProcedure
@@ -21,7 +22,7 @@ export const chatRouter = createTRPCRouter({
 
       const fromId = session.user.id;
 
-      const messageData = await prisma.$transaction(async (trs) => {
+      const messageData: MessageDTO = await prisma.$transaction(async (trs) => {
         const rawMessageData = await trs.message.create({
           data: {
             content: message,
@@ -41,7 +42,7 @@ export const chatRouter = createTRPCRouter({
           },
         });
 
-        const messageData: MessageDTO = toTargetDto(rawMessageData);
+        const messageData = toTargetDto(rawMessageData);
 
         await trs.conversation.upsert({
           where: {
@@ -89,7 +90,10 @@ export const chatRouter = createTRPCRouter({
           },
         });
 
-        return messageData;
+        return {
+          ...messageData,
+          from: mapOnlineStatus(messageData.from),
+        };
       });
 
       const messageJson = JSON.stringify(messageData);
@@ -110,7 +114,7 @@ export const chatRouter = createTRPCRouter({
 
       const fromId = session.user.id;
 
-      const messageData = await prisma.$transaction(async (trs) => {
+      const messageData: MessageDTO = await prisma.$transaction(async (trs) => {
         const rawMessageData = await trs.message.create({
           data: {
             content: message,
@@ -130,7 +134,7 @@ export const chatRouter = createTRPCRouter({
           },
         });
 
-        const messageData: MessageDTO = toTargetDto(rawMessageData);
+        const messageData = toTargetDto(rawMessageData);
 
         const group = await trs.group.findUniqueOrThrow({
           where: {
@@ -171,7 +175,10 @@ export const chatRouter = createTRPCRouter({
           })
         );
 
-        return messageData;
+        return {
+          ...messageData,
+          from: mapOnlineStatus(messageData.from),
+        };
       });
 
       const messageJSON = JSON.stringify(messageData);
@@ -245,7 +252,10 @@ export const chatRouter = createTRPCRouter({
         take: 100,
       });
 
-      return messages.map(toTargetDto);
+      return messages.map(toTargetDto).map((message) => ({
+        ...message,
+        from: mapOnlineStatus(message.from),
+      }));
     }),
 
   getGroupMessages: protectedProcedure
@@ -284,6 +294,9 @@ export const chatRouter = createTRPCRouter({
         },
       });
 
-      return groupMessages.map(toTargetDto);
+      return groupMessages.map(toTargetDto).map((message) => ({
+        ...message,
+        from: mapOnlineStatus(message.from),
+      }));
     }),
 });
