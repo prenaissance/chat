@@ -33,6 +33,27 @@ export const friendsRouter = createTRPCRouter({
 
     return friends.map(mapOnlineStatus);
   }),
+
+  getSentFriendRequests: protectedProcedure.query(async ({ ctx }) => {
+    const { session, prisma } = ctx;
+    const sentFriendRequests = await prisma.friendRequest.findMany({
+      where: {
+        fromId: session.user.id,
+        accepted: false,
+      },
+    });
+  }),
+
+  getReceivedFriendRequests: protectedProcedure.query(async ({ ctx }) => {
+    const { session, prisma } = ctx;
+    const receivedFriendRequests = await prisma.friendRequest.findMany({
+      where: {
+        toId: session.user.id,
+        accepted: false,
+      },
+    });
+  }),
+
   getFriendStatus: protectedProcedure
     .input(
       z.object({

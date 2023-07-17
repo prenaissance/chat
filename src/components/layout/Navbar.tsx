@@ -32,6 +32,10 @@ const links = [
     name: "Chat",
     href: "/chat",
   },
+  {
+    name: "Friends",
+    href: "/friends",
+  },
 ];
 
 const NavLink = ({ children, href }: { children: ReactNode; href: string }) => (
@@ -139,12 +143,12 @@ const NavBar = (props: ChakraProps) => {
         <HStack spacing={8} alignItems="center">
           <Box>Logo</Box>
           <HStack as="nav" spacing={4} display={{ base: "none", md: "flex" }}>
+            <CorrespondentsSearch />
             {links.map(({ name, href }) => (
               <NavLink key={href} href={href}>
                 {name}
               </NavLink>
             ))}
-            <CorrespondentsSearch />
           </HStack>
         </HStack>
         <AvatarMenu />
