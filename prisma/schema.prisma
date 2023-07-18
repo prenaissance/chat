@@ -60,6 +60,8 @@ model User {
     targetConversations    Conversation[]  @relation("UserTargetConversations")
     sentFriendRequests     FriendRequest[] @relation("SentFriendRequests")
     receivedFriendRequests FriendRequest[] @relation("ReceivedFriendRequests")
+
+    @@index(fields: [lastSeenAt], type: BTree)
 }
 
 model VerificationToken {
