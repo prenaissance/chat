@@ -37,27 +37,46 @@ const Chat = () => {
             borderLeft="1px solid"
             borderColor={useColorModeValue("gray.400", "gray.600")}
           >
-            {friends.map((friend) => (
-              <HStack
-                key={friend.id}
-                w="100%"
+            <Text
+              textAlign="start"
+              fontWeight="bold"
+              letterSpacing={1.2}
+              px={4}
+              py={2}
+            >
+              Friends:
+            </Text>
+            {friends.length ? (
+              friends.map((friend) => (
+                <HStack
+                  key={friend.id}
+                  w="100%"
+                  px={4}
+                  py={2}
+                  alignItems="center"
+                >
+                  <UserAvatar user={friend} size="sm" />
+                  <Text>{friend.name}</Text>
+                  <IconButton
+                    ml="auto"
+                    as={NextLink}
+                    href={`/chat/user/${friend.id}`}
+                    aria-label={`Open chat with ${friend.name}`}
+                    icon={<AiOutlineSend />}
+                    rounded="md"
+                    size="sm"
+                  />
+                </HStack>
+              ))
+            ) : (
+              <Text
                 px={4}
                 py={2}
-                alignItems="center"
+                color={useColorModeValue("gray.700", "gray.300")}
               >
-                <UserAvatar user={friend} size="sm" />
-                <Text>{friend.name}</Text>
-                <IconButton
-                  ml="auto"
-                  as={NextLink}
-                  href={`/chat/user/${friend.id}`}
-                  aria-label={`Open chat with ${friend.name}`}
-                  icon={<AiOutlineSend />}
-                  rounded="md"
-                  size="sm"
-                />
-              </HStack>
-            ))}
+                You don't have any friends yet.
+              </Text>
+            )}
           </chakra.aside>
         </Show>
       </Flex>
