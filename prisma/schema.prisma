@@ -94,6 +94,7 @@ model FriendRequest {
     @@unique([fromId, toId])
     @@index([fromId])
     @@index([toId])
+    @@index([fromId, toId, accepted])
 }
 
 model Group {

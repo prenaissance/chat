@@ -23,24 +23,12 @@ export const onlineRouter = createTRPCRouter({
         lastSeenAt: {
           lte: new Date(Date.now() - 1000 * 60 * 5),
         },
-        OR: [
-          {
-            sentFriendRequests: {
-              some: {
-                toId: session.user.id,
-                accepted: true,
-              },
-            },
+        sentFriendRequests: {
+          some: {
+            toId: session.user.id,
+            accepted: true,
           },
-          {
-            receivedFriendRequests: {
-              some: {
-                fromId: session.user.id,
-                accepted: true,
-              },
-            },
-          },
-        ],
+        },
       },
     });
 

@@ -10,24 +10,12 @@ export const friendsRouter = createTRPCRouter({
     const { session, prisma } = ctx;
     const friends = await prisma.user.findMany({
       where: {
-        OR: [
-          {
-            sentFriendRequests: {
-              some: {
-                toId: session.user.id,
-                accepted: true,
-              },
-            },
+        sentFriendRequests: {
+          some: {
+            toId: session.user.id,
+            accepted: true,
           },
-          {
-            receivedFriendRequests: {
-              some: {
-                fromId: session.user.id,
-                accepted: true,
-              },
-            },
-          },
-        ],
+        },
       },
     });
 
@@ -42,6 +30,7 @@ export const friendsRouter = createTRPCRouter({
         accepted: false,
       },
     });
+    return sentFriendRequests;
   }),
 
   getReceivedFriendRequests: protectedProcedure.query(async ({ ctx }) => {
@@ -52,6 +41,7 @@ export const friendsRouter = createTRPCRouter({
         accepted: false,
       },
     });
+    return receivedFriendRequests;
   }),
 
   getFriendStatus: protectedProcedure
@@ -107,7 +97,7 @@ export const friendsRouter = createTRPCRouter({
       });
 
       if (receivedFriendRequest) {
-        return await prisma.friendRequest.update({
+        await prisma.friendRequest.update({
           where: {
             id: receivedFriendRequest.id,
           },
@@ -115,16 +105,21 @@ export const friendsRouter = createTRPCRouter({
             accepted: true,
           },
         });
+        await prisma.friendRequest.create({
+          data: {
+            fromId: session.user.id,
+            toId: targetUserId,
+            accepted: true,
+          },
+        });
       }
 
-      const friendRequest = await prisma.friendRequest.create({
+      await prisma.friendRequest.create({
         data: {
           fromId: session.user.id,
           toId: targetUserId,
         },
       });
-
-      return friendRequest;
     }),
 
   cancelFriendRequest: protectedProcedure
@@ -150,14 +145,14 @@ export const friendsRouter = createTRPCRouter({
         });
       }
 
-      const friendRequest = await prisma.friendRequest.deleteMany({
+      await prisma.friendRequest.delete({
         where: {
-          fromId: session.user.id,
-          toId: targetUserId,
-          accepted: false,
+          fromId_toId: {
+            fromId: session.user.id,
+            toId: targetUserId,
+          },
         },
       });
-      return friendRequest;
     }),
 
   rejectFriendRequest: protectedProcedure
@@ -182,17 +177,13 @@ export const friendsRouter = createTRPCRouter({
           code: "NOT_FOUND",
         });
       }
-      const friendRequest = await prisma.friendRequest.findFirst({
-        where: {
-          fromId: targetUserId,
-          toId: session.user.id,
-          accepted: false,
-        },
-      });
 
       return await prisma.friendRequest.delete({
         where: {
-          id: friendRequest?.id,
+          fromId_toId: {
+            fromId: targetUserId,
+            toId: session.user.id,
+          },
         },
       });
     }),
@@ -227,6 +218,14 @@ export const friendsRouter = createTRPCRouter({
           accepted: false,
         },
       });
+      await prisma.friendRequest.create({
+        data: {
+          fromId: session.user.id,
+          toId: targetUserId,
+          accepted: true,
+        },
+      });
+
       return await prisma.friendRequest.update({
         where: {
           id: friendRequest?.id,
