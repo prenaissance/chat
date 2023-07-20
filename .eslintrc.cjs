@@ -18,7 +18,7 @@ const config = {
   parserOptions: {
     project: path.join(__dirname, "tsconfig.json"),
   },
-  plugins: ["@typescript-eslint", "react", "react-hooks", "prettier"],
+  plugins: ["@typescript-eslint", "react", "prettier"],
   extends: [
     "next/core-web-vitals",
     "plugin:@typescript-eslint/recommended",
@@ -36,6 +36,8 @@ const config = {
     "@typescript-eslint/no-misused-promises": "off",
     "@typescript-eslint/no-floating-promises": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unsafe-enum-comparison": "off",
+    "react/no-unescaped-entities": "off",
     "react/jsx-curly-brace-presence": [
       "error",
       {

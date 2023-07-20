@@ -13,11 +13,9 @@ const ChatMessagesSkeleton = (props: BoxProps) => (
   <Box {...props}>Placeholder</Box>
 );
 
-type Props = BoxProps & {
-  isTargetOnline?: boolean;
-};
+type Props = BoxProps;
 
-export const ChatMessages = ({ isTargetOnline = false, ...props }: Props) => {
+export const ChatMessages = ({ ...props }: Props) => {
   const messages = useChatStore(messagesSelector);
   const isLoadingMessages = useChatStore(isLoadingMessagesSelector);
   const session = useSession();

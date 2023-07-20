@@ -15,6 +15,7 @@ import { AiOutlineSend } from "react-icons/ai";
 const OnlineFriends = (props: ChakraProps) => {
   const friendsQuery = api.friends.getFriends.useQuery();
   const friends = friendsQuery.data ?? [];
+  const messageColor = useColorModeValue("gray.700", "gray.300");
 
   return (
     <chakra.aside w={80} {...props}>
@@ -44,7 +45,7 @@ const OnlineFriends = (props: ChakraProps) => {
           </HStack>
         ))
       ) : (
-        <Text px={4} py={2} color={useColorModeValue("gray.700", "gray.300")}>
+        <Text px={4} py={2} color={messageColor}>
           You don't have any friends yet.
         </Text>
       )}

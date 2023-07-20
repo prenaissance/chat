@@ -1,8 +1,8 @@
-import { useCallback, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import NavBar from "./Navbar";
 import { chakra } from "@chakra-ui/react";
 import { api } from "~/utils/api";
-import { UseIntervalOptions, useInterval } from "~/hooks/useInterval";
+import { useInterval } from "~/hooks/useInterval";
 import { useSession } from "next-auth/react";
 
 const Layout = ({ children }: { children: ReactNode }) => {

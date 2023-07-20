@@ -191,7 +191,7 @@ export const chatRouter = createTRPCRouter({
 
     return observable<MessageDTO>((emitter) => {
       const handler = (channel: string, message: string) => {
-        if (channel !== RedisChannel.ChatMessages) {
+        if (channel !== RedisChannel.ChatMessages.toString()) {
           return;
         }
         const messageData = JSON.parse(message) as MessageDTO;

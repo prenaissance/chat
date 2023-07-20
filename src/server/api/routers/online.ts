@@ -1,4 +1,3 @@
-import { mapOnlineStatus } from "../services/online-service";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const onlineRouter = createTRPCRouter({
