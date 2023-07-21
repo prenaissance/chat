@@ -19,7 +19,7 @@ const Chat = () => {
         <Show above="xl">
           <OnlineFriends
             borderColor={useColorModeValue("gray.400", "gray.600")}
-            borderLeft="1px solid"
+            borderLeftWidth="1px"
             h="100%"
           />
         </Show>

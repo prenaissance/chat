@@ -20,7 +20,7 @@ export const onlineRouter = createTRPCRouter({
     const friends = await prisma.user.findMany({
       where: {
         lastSeenAt: {
-          lte: new Date(Date.now() - 1000 * 60 * 5),
+          gte: new Date(Date.now() - 1000 * 60 * 5),
         },
         sentFriendRequests: {
           some: {

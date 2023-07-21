@@ -12,8 +12,12 @@ import UserAvatar from "../common/UserAvatar";
 import { api } from "~/utils/api";
 import { AiOutlineSend } from "react-icons/ai";
 
-const OnlineFriends = (props: ChakraProps) => {
-  const friendsQuery = api.friends.getFriends.useQuery();
+type Props = ChakraProps & {
+  title?: string;
+};
+
+const OnlineFriends = ({ title = "Online Friends:", ...props }: Props) => {
+  const friendsQuery = api.online.getOnlineFriends.useQuery();
   const friends = friendsQuery.data ?? [];
   const messageColor = useColorModeValue("gray.700", "gray.300");
 
@@ -26,7 +30,7 @@ const OnlineFriends = (props: ChakraProps) => {
         px={4}
         py={2}
       >
-        Friends:
+        {title}
       </Text>
       {friends.length ? (
         friends.map((friend) => (
@@ -46,7 +50,7 @@ const OnlineFriends = (props: ChakraProps) => {
         ))
       ) : (
         <Text px={4} py={2} color={messageColor}>
-          You don't have any friends yet.
+          There are no friends online.
         </Text>
       )}
     </chakra.aside>

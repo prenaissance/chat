@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { FriendStatus } from "~/shared/dtos/friends";
 import { getFriendStatus } from "../services/friend-status-service";
 import { mapOnlineStatus } from "../services/online-service";
+import { omit } from "~/utils/reflections";
 
 export const friendsRouter = createTRPCRouter({
   getFriends: protectedProcedure.query(async ({ ctx }) => {
@@ -20,6 +21,30 @@ export const friendsRouter = createTRPCRouter({
     });
 
     return friends.map(mapOnlineStatus);
+  }),
+
+  getFriendsWithRequestDate: protectedProcedure.query(async ({ ctx }) => {
+    const { session, prisma } = ctx;
+    const friends = await prisma.user.findMany({
+      where: {
+        sentFriendRequests: {
+          some: {
+            toId: session.user.id,
+            accepted: true,
+          },
+        },
+      },
+      include: {
+        sentFriendRequests: true,
+      },
+    });
+
+    return friends
+      .map((friend) => ({
+        ...omit(friend, ["sentFriendRequests"]),
+        friendsSince: friend.sentFriendRequests[0]!.updatedAt,
+      }))
+      .map(mapOnlineStatus);
   }),
 
   getSentFriendRequests: protectedProcedure.query(async ({ ctx }) => {

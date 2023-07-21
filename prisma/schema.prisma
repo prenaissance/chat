@@ -85,6 +85,7 @@ enum MessageTarget {
 model FriendRequest {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
     fromId    String
     from      User     @relation("SentFriendRequests", fields: [fromId], references: [id])
     toId      String
