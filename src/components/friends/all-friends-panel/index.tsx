@@ -15,8 +15,9 @@ import { AiOutlineSend } from "react-icons/ai";
 import NextLink from "next/link";
 
 import { api } from "~/utils/api";
-import UserAvatar from "../common/UserAvatar";
+import UserAvatar from "../../common/UserAvatar";
 import { formatSocialMediaDate } from "~/utils/formatting";
+import RemoveFriendDialog from "./RemoveFriendDialog";
 
 const AllFriendsPanel = () => {
   const friendsQuery = api.friends.getFriendsWithRequestDate.useQuery();
@@ -45,7 +46,7 @@ const AllFriendsPanel = () => {
               friends since {formatSocialMediaDate(friend.friendsSince)}
             </Text>
           </chakra.span>
-          <Menu isLazy placement="bottom-end">
+          <Menu placement="bottom-end">
             <MenuButton
               variant="outline"
               as={IconButton}
@@ -53,6 +54,7 @@ const AllFriendsPanel = () => {
               aria-label={`Open actions menu for ${friend.name}`}
               icon={<SlOptionsVertical />}
               rounded="md"
+              size="sm"
             />
             <MenuList>
               <MenuItem
@@ -62,6 +64,7 @@ const AllFriendsPanel = () => {
               >
                 Send message
               </MenuItem>
+              <RemoveFriendDialog userId={friend.id} />
             </MenuList>
           </Menu>
         </chakra.li>

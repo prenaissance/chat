@@ -17,7 +17,7 @@ type Props = ChakraProps & {
 };
 
 const OnlineFriends = ({ title = "Online Friends:", ...props }: Props) => {
-  const friendsQuery = api.online.getOnlineFriends.useQuery();
+  const friendsQuery = api.friends.getOnlineFriends.useQuery();
   const friends = friendsQuery.data ?? [];
   const messageColor = useColorModeValue("gray.700", "gray.300");
 

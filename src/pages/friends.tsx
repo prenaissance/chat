@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react";
 import ChatLayout from "~/components/chat/ChatLayout";
 import OnlineFriends from "~/components/chat/OnlineFriends";
-import AllFriendsPanel from "~/components/friends/AllFriendsPanel";
+import AllFriendsPanel from "~/components/friends/all-friends-panel";
 
 const Friends = () => {
   return (

@@ -14,26 +14,4 @@ export const onlineRouter = createTRPCRouter({
 
     return user;
   }),
-
-  getOnlineFriends: protectedProcedure.query(async ({ ctx }) => {
-    const { session, prisma } = ctx;
-    const friends = await prisma.user.findMany({
-      where: {
-        lastSeenAt: {
-          gte: new Date(Date.now() - 1000 * 60 * 5),
-        },
-        sentFriendRequests: {
-          some: {
-            toId: session.user.id,
-            accepted: true,
-          },
-        },
-      },
-    });
-
-    return friends.map((user) => ({
-      ...user,
-      isOnline: true,
-    }));
-  }),
 });

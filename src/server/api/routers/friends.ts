@@ -47,6 +47,28 @@ export const friendsRouter = createTRPCRouter({
       .map(mapOnlineStatus);
   }),
 
+  getOnlineFriends: protectedProcedure.query(async ({ ctx }) => {
+    const { session, prisma } = ctx;
+    const friends = await prisma.user.findMany({
+      where: {
+        lastSeenAt: {
+          gte: new Date(Date.now() - 1000 * 60 * 5),
+        },
+        sentFriendRequests: {
+          some: {
+            toId: session.user.id,
+            accepted: true,
+          },
+        },
+      },
+    });
+
+    return friends.map((user) => ({
+      ...user,
+      isOnline: true,
+    }));
+  }),
+
   getSentFriendRequests: protectedProcedure.query(async ({ ctx }) => {
     const { session, prisma } = ctx;
     const sentFriendRequests = await prisma.friendRequest.findMany({
@@ -257,6 +279,45 @@ export const friendsRouter = createTRPCRouter({
         },
         data: {
           accepted: true,
+        },
+      });
+    }),
+
+  removeFriend: protectedProcedure
+    .input(
+      z.object({
+        targetUserId: z.string().cuid(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { targetUserId } = input;
+      const { session, prisma } = ctx;
+
+      const friendStatus = await getFriendStatus(
+        prisma,
+        session.user.id,
+        targetUserId
+      );
+
+      if (friendStatus !== FriendStatus.Friends) {
+        throw new TRPCError({
+          message: "You are not friends",
+          code: "NOT_FOUND",
+        });
+      }
+
+      await prisma.friendRequest.deleteMany({
+        where: {
+          OR: [
+            {
+              fromId: session.user.id,
+              toId: targetUserId,
+            },
+            {
+              fromId: targetUserId,
+              toId: session.user.id,
+            },
+          ],
         },
       });
     }),
