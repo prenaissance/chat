@@ -42,11 +42,12 @@ const AcceptFriendRequestButton = ({
     acceptFriendRequestMutation.mutate({
       targetUserId: userId,
     });
+  const label = `Accept friend request from ${name}`;
 
   return (
-    <Tooltip label={`Accept friend request from ${name}`} placement="right">
+    <Tooltip label={label} placement="right">
       <IconButton
-        aria-label={`Accept friend request from ${name}`}
+        aria-label={label}
         size="sm"
         isLoading={acceptFriendRequestMutation.isLoading}
         onClick={handleCancelFriendRequest}

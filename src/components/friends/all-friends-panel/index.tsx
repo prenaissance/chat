@@ -17,7 +17,7 @@ import NextLink from "next/link";
 import { api } from "~/utils/api";
 import UserAvatar from "../../common/UserAvatar";
 import { formatSocialMediaDate } from "~/utils/formatting";
-import RemoveFriendDialog from "./RemoveFriendDialog";
+import RemoveFriendMenuItem from "./RemoveFriendMenuItem";
 
 const AllFriendsPanel = () => {
   const friendsQuery = api.friends.getFriendsWithRequestDate.useQuery();
@@ -60,11 +60,11 @@ const AllFriendsPanel = () => {
               <MenuItem
                 icon={<Icon as={AiOutlineSend} />}
                 as={NextLink}
-                href={`/chat/users/${friend.id}`}
+                href={`/chat/user/${friend.id}`}
               >
                 Send message
               </MenuItem>
-              <RemoveFriendDialog userId={friend.id} />
+              <RemoveFriendMenuItem userId={friend.id} name={friend.name} />
             </MenuList>
           </Menu>
         </chakra.li>

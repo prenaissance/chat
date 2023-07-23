@@ -53,12 +53,13 @@ const CancelFriendRequestButton = ({
     cancelFriendRequestMutation.mutate({
       targetUserId: userId,
     });
+  const label = `Cancel friend request to ${name}`;
 
   return (
     <>
-      <Tooltip label={`Cancel friend request to ${name}`} placement="right">
+      <Tooltip label={label} placement="right">
         <IconButton
-          aria-label={`Cancel friend request to ${name}`}
+          aria-label={label}
           size="sm"
           isLoading={cancelFriendRequestMutation.isLoading}
           onClick={onOpen}

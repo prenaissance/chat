@@ -23,6 +23,7 @@ import { FaUserFriends } from "react-icons/fa";
 import { FriendStatus } from "~/shared/dtos/friends";
 import CancelFriendRequestButton from "~/components/common/action-buttons/CancelFriendRequestButton";
 import AcceptFriendRequestButton from "~/components/common/action-buttons/AcceptFriendRequestButton";
+import RemoveFriendButton from "~/components/common/action-buttons/remove-friend-button";
 
 const FriendActionButton = ({
   name,
@@ -83,11 +84,13 @@ const FriendActionButton = ({
         />
       );
     case FriendStatus.Friends:
-      <Tooltip label={`Already friends with ${name}`} placement="right">
-        <IconButton aria-label={`Already friends with ${name}`} size="sm">
-          <Icon as={FaUserFriends} />
-        </IconButton>
-      </Tooltip>;
+      return (
+        <RemoveFriendButton
+          icon={FaUserFriends}
+          name={name}
+          userId={targetUserId}
+        />
+      );
     default:
       return null;
   }
