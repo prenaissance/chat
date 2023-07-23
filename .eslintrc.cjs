@@ -37,6 +37,7 @@ const config = {
     "@typescript-eslint/no-floating-promises": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-unsafe-enum-comparison": "off",
+    "@typescript-eslint/no-explicit-any": "off",
     "react/no-unescaped-entities": "off",
     "react/jsx-curly-brace-presence": [
       "error",

@@ -10,6 +10,7 @@ import {
 import ChatLayout from "~/components/chat/ChatLayout";
 import OnlineFriends from "~/components/chat/OnlineFriends";
 import AllFriendsPanel from "~/components/friends/all-friends-panel";
+import SentFriendRequestsPanel from "~/components/friends/sent-friend-requests-panel";
 
 const Friends = () => {
   return (
@@ -33,6 +34,7 @@ const Friends = () => {
           </TabList>
           <TabPanels>
             <AllFriendsPanel />
+            <SentFriendRequestsPanel />
           </TabPanels>
         </Tabs>
         <Show above="xl">

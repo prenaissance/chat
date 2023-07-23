@@ -21,6 +21,7 @@ import { AiOutlineSend, AiOutlinePlus, AiOutlineUserAdd } from "react-icons/ai";
 import { MdOutlinePending } from "react-icons/md";
 import { FaUserFriends } from "react-icons/fa";
 import { FriendStatus } from "~/shared/dtos/friends";
+import CancelFriendRequestButton from "~/components/common/action-buttons/CancelFriendRequestButton";
 
 const FriendActionButton = ({
   name,
@@ -34,25 +35,17 @@ const FriendActionButton = ({
   const queryClient = api.useContext();
   const toast = useToast();
   const addFriendMutation = api.friends.addFriend.useMutation({
-    onSuccess: () => {
-      void queryClient.correspondents.search.invalidate();
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.correspondents.search.invalidate(),
+        queryClient.friends.getSentFriendRequests.invalidate(),
+      ]);
       toast({
         title: `Friend request sent to ${name}`,
         status: "success",
       });
     },
   });
-
-  const cancelFriendRequestMutation =
-    api.friends.cancelFriendRequest.useMutation({
-      onSuccess: () => {
-        void queryClient.correspondents.search.invalidate();
-        toast({
-          title: `Friend request to ${name} cancelled`,
-          status: "success",
-        });
-      },
-    });
 
   const acceptFriendRequestMutation =
     api.friends.acceptFriendRequest.useMutation({
@@ -85,20 +78,11 @@ const FriendActionButton = ({
       );
     case FriendStatus.Sent:
       return (
-        <Tooltip label={`Cancel friend request to ${name}`} placement="right">
-          <IconButton
-            aria-label={`Cancel friend request to ${name}`}
-            size="sm"
-            isLoading={cancelFriendRequestMutation.isLoading}
-            onClick={() => {
-              cancelFriendRequestMutation.mutate({
-                targetUserId,
-              });
-            }}
-          >
-            <Icon as={MdOutlinePending} />
-          </IconButton>
-        </Tooltip>
+        <CancelFriendRequestButton
+          icon={MdOutlinePending}
+          name={name}
+          userId={targetUserId}
+        />
       );
     case FriendStatus.Received:
       return (

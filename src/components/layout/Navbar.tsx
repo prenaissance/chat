@@ -122,7 +122,7 @@ const NavBar = (props: ChakraProps) => {
 
   return (
     <chakra.nav
-      zIndex="popover"
+      zIndex="dropdown"
       w="100%"
       position="sticky"
       top={0}

@@ -30,7 +30,14 @@ const CorrespondentsSearch = () => {
   const handleClose = useCallback(() => setIsOpen(false), []);
   useOutsideClick({
     ref,
-    handler: handleClose,
+    handler: (e) => {
+      if (e.target instanceof HTMLElement) {
+        if (e.target.closest("[data-ignore-outside-click]")) {
+          return;
+        }
+      }
+      handleClose();
+    },
   });
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value),
