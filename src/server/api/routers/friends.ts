@@ -90,6 +90,9 @@ export const friendsRouter = createTRPCRouter({
         toId: session.user.id,
         accepted: false,
       },
+      include: {
+        from: true,
+      },
     });
     return receivedFriendRequests;
   }),

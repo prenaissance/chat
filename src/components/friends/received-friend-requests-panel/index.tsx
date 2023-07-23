@@ -12,18 +12,18 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import { SlOptionsVertical } from "react-icons/sl";
-import { AiOutlineSend } from "react-icons/ai";
-import { ImCancelCircle } from "react-icons/im";
+import { AiOutlineSend, AiOutlineCheck } from "react-icons/ai";
 import NextLink from "next/link";
 
 import { api } from "~/utils/api";
 import UserAvatar from "../../common/UserAvatar";
 import { formatSocialMediaDate } from "~/utils/formatting";
-import CancelFriendRequestButton from "~/components/common/action-buttons/CancelFriendRequestButton";
+import AcceptFriendRequestButton from "~/components/common/action-buttons/AcceptFriendRequestButton";
 
-const SentFriendRequestsPanel = () => {
-  const sentFriendRequestsQuery = api.friends.getSentFriendRequests.useQuery();
-  const friendRequests = sentFriendRequestsQuery.data ?? [];
+const ReceivedFriendRequestsPanel = () => {
+  const receivedFriendRequestsQuery =
+    api.friends.getReceivedFriendRequests.useQuery();
+  const friendRequests = receivedFriendRequestsQuery.data ?? [];
   const hoverColor = useColorModeValue("blackAlpha.200", "whiteAlpha.200");
 
   return (
@@ -39,27 +39,27 @@ const SentFriendRequestsPanel = () => {
           }}
           p={2}
         >
-          <UserAvatar user={friendRequest.to} size="sm" />
+          <UserAvatar user={friendRequest.from} size="sm" />
           <chakra.span ml={2}>
             <Text fontWeight="bold" letterSpacing={0.5} as="span">
-              {friendRequest.to.name}{" "}
+              {friendRequest.from.name}{" "}
             </Text>
             <Text as="span" color="gray.500">
-              sent {formatSocialMediaDate(friendRequest.updatedAt)}
+              received {formatSocialMediaDate(friendRequest.updatedAt)}
             </Text>
           </chakra.span>
           <HStack gap={2} ml="auto">
-            <CancelFriendRequestButton
-              icon={ImCancelCircle}
-              name={friendRequest.to.name}
-              userId={friendRequest.to.id}
+            <AcceptFriendRequestButton
+              icon={AiOutlineCheck}
+              name={friendRequest.from.name}
+              userId={friendRequest.from.id}
               variant="outline"
             />
             <Menu placement="bottom-end">
               <MenuButton
                 variant="outline"
                 as={IconButton}
-                aria-label={`Open actions menu for ${friendRequest.to.name}`}
+                aria-label={`Open actions menu for ${friendRequest.from.name}`}
                 icon={<SlOptionsVertical />}
                 rounded="md"
                 size="sm"
@@ -68,7 +68,7 @@ const SentFriendRequestsPanel = () => {
                 <MenuItem
                   icon={<Icon as={AiOutlineSend} />}
                   as={NextLink}
-                  href={`/chat/users/${friendRequest.to.id}`}
+                  href={`/chat/users/${friendRequest.from.id}`}
                 >
                   Send message
                 </MenuItem>
@@ -81,4 +81,4 @@ const SentFriendRequestsPanel = () => {
   );
 };
 
-export default SentFriendRequestsPanel;
+export default ReceivedFriendRequestsPanel;

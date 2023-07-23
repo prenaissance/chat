@@ -40,7 +40,6 @@ const CancelFriendRequestButton = ({
         await Promise.all([
           queryClient.correspondents.search.invalidate(),
           queryClient.friends.getSentFriendRequests.invalidate(),
-          queryClient.correspondents.search.invalidate(),
         ]);
 
         toast({

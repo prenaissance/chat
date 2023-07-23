@@ -22,6 +22,7 @@ import { MdOutlinePending } from "react-icons/md";
 import { FaUserFriends } from "react-icons/fa";
 import { FriendStatus } from "~/shared/dtos/friends";
 import CancelFriendRequestButton from "~/components/common/action-buttons/CancelFriendRequestButton";
+import AcceptFriendRequestButton from "~/components/common/action-buttons/AcceptFriendRequestButton";
 
 const FriendActionButton = ({
   name,
@@ -46,17 +47,6 @@ const FriendActionButton = ({
       });
     },
   });
-
-  const acceptFriendRequestMutation =
-    api.friends.acceptFriendRequest.useMutation({
-      onSuccess: () => {
-        void queryClient.correspondents.search.invalidate();
-        toast({
-          title: `Friend request from ${name} accepted`,
-          status: "success",
-        });
-      },
-    });
 
   switch (friendStatus) {
     case FriendStatus.None:
@@ -86,20 +76,11 @@ const FriendActionButton = ({
       );
     case FriendStatus.Received:
       return (
-        <Tooltip label={`Accept friend request from ${name}`} placement="right">
-          <IconButton
-            aria-label={`Accept friend request from ${name}`}
-            size="sm"
-            isLoading={acceptFriendRequestMutation.isLoading}
-            onClick={() => {
-              acceptFriendRequestMutation.mutate({
-                targetUserId,
-              });
-            }}
-          >
-            <Icon as={AiOutlineUserAdd} />
-          </IconButton>
-        </Tooltip>
+        <AcceptFriendRequestButton
+          icon={AiOutlineUserAdd}
+          name={name}
+          userId={targetUserId}
+        />
       );
     case FriendStatus.Friends:
       <Tooltip label={`Already friends with ${name}`} placement="right">
