@@ -5,6 +5,7 @@ import { conversationsRouter } from "./routers/conversations";
 import { usersRouter } from "./routers/users";
 import { friendsRouter } from "./routers/friends";
 import { onlineRouter } from "./routers/online";
+import { groupsRouter } from "./routers/groups";
 
 /**
  * This is the primary router for your server.

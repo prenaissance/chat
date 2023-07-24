@@ -16,4 +16,4 @@ const groupsRouter = createTRPCRouter({
   }),
 });
 
-export default groupsRouter;
+export { groupsRouter };

@@ -28,6 +28,7 @@ export const env = createEnv({
       .string()
       .regex(/^\d{1,6}$/, "Must be a valid port number")
       .transform(Number),
+    AZURE_STORAGE_CONNECTION_STRING: z.string(),
   },
 
   /**
@@ -53,6 +54,7 @@ export const env = createEnv({
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     WS_PORT: process.env.WS_PORT,
     NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
+    AZURE_STORAGE_CONNECTION_STRING: process.env.AZURE_STORAGE_CONNECTION_STRING,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

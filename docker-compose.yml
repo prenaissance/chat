@@ -3,6 +3,7 @@ version: "3"
 volumes:
   postgres-data:
   redis-data:
+  azurite-data:
 
 services:
   postgres:
@@ -24,4 +25,12 @@ services:
       - redis-data:/data
     ports:
       - 6379:6379
+    restart: always
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: azurite
+    volumes:
+      - azurite-data:/data
+    ports:
+      - 10000:10000 # just blob storage
     restart: always

@@ -12,6 +12,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@azure/storage-blob": "^12.15.0",
     "@chakra-ui/icons": "^2.0.19",
     "@chakra-ui/react": "^2.7.1",
     "@chakra-ui/theme-tools": "^2.0.18",
