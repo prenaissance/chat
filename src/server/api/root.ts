@@ -18,6 +18,7 @@ export const appRouter = createTRPCRouter({
   friends: friendsRouter,
   conversations: conversationsRouter,
   online: onlineRouter,
+  groups: groupsRouter,
 });
 
 // export type definition of API
