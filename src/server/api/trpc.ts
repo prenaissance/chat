@@ -13,9 +13,11 @@ import { type CreateWSSContextFnOptions } from "@trpc/server/adapters/ws";
 import { type Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
+
 import { getServerAuthSession } from "~/server/auth";
-import { prisma } from "~/server/db";
-import { redis, subscriberRedis } from "~/server/redis";
+import { prisma } from "~/server/services/singletons/db";
+import { redis, subscriberRedis } from "~/server/services/singletons/redis";
+import { blobServiceClient } from "~/server/services/singletons/blob-storage";
 import { parseCookies } from "~/utils/cookies";
 
 /**
@@ -31,6 +33,7 @@ type CreateContextOptions = {
   prisma?: typeof prisma;
   redis?: typeof redis;
   subscriberRedis?: typeof subscriberRedis;
+  blobServiceClient?: typeof blobServiceClient;
 };
 
 /**
@@ -49,6 +52,7 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
     prisma: opts.prisma ?? prisma,
     redis: opts.redis ?? redis,
     subscriberRedis: opts.subscriberRedis ?? subscriberRedis,
+    blobServiceClient: opts.blobServiceClient ?? blobServiceClient,
   };
 };
 
@@ -69,6 +73,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
     prisma,
     redis,
     subscriberRedis,
+    blobServiceClient,
   });
 };
 
@@ -102,6 +107,8 @@ export const createWSSContext = async (opts: CreateWSSContextFnOptions) => {
     session,
     prisma,
     redis,
+    subscriberRedis,
+    blobServiceClient,
   });
 };
 

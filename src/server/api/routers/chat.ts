@@ -3,10 +3,10 @@ import { MessageSource, MessageTarget } from "@prisma/client";
 import { observable } from "@trpc/server/observable";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { RedisChannel } from "~/server/redis";
+import { RedisChannel } from "~/server/services/singletons/redis";
 import { type MessageDTO } from "~/shared/dtos/chat";
 import { toTargetDto } from "~/shared/dtos/target";
-import { mapOnlineStatus } from "../services/online-service";
+import { mapOnlineStatus } from "../../services/online-service";
 
 export const chatRouter = createTRPCRouter({
   sendUserMessage: protectedProcedure

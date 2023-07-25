@@ -1,7 +1,7 @@
 import { toTargetDto } from "~/shared/dtos/target";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { MessageTarget } from "@prisma/client";
-import { mapOnlineStatus } from "../services/online-service";
+import { mapOnlineStatus } from "../../services/online-service";
 
 export const conversationsRouter = createTRPCRouter({
   getConversations: protectedProcedure.query(async ({ ctx }) => {

@@ -2,8 +2,8 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { FriendStatus } from "~/shared/dtos/friends";
-import { getFriendStatus } from "../services/friend-status-service";
-import { mapOnlineStatus } from "../services/online-service";
+import { getFriendStatus } from "../../services/friend-status-service";
+import { mapOnlineStatus } from "../../services/online-service";
 import { omit } from "~/utils/reflections";
 
 export const friendsRouter = createTRPCRouter({

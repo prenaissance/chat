@@ -1,7 +1,7 @@
 import { omit } from "~/utils/reflections";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
-import { getFriendStatusForUser } from "../services/friend-status-service";
+import { getFriendStatusForUser } from "../../services/friend-status-service";
 
 export const correspondentsRouter = createTRPCRouter({
   search: protectedProcedure
