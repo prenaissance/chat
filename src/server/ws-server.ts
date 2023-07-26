@@ -4,7 +4,7 @@ import { applyWSSHandler } from "@trpc/server/adapters/ws";
 import { env } from "~/env.mjs";
 import { type AppRouter, appRouter } from "~/server/api/root";
 import { createWSSContext } from "./api/trpc";
-import { subscriberRedis } from "./redis";
+import { subscriberRedis } from "./services/singletons/redis";
 
 subscriberRedis.on("message", (channel, _message) => {
   console.log(

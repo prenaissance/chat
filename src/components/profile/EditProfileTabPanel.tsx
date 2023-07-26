@@ -13,6 +13,7 @@ import {
 import { useSession } from "next-auth/react";
 import { type ProfileTabsStore, useProfileTabs } from "~/stores/profile-tabs";
 import UserCard from "../common/UserCard";
+import FileUpload from "../common/FileUpload";
 
 const FieldInfo = ({ label, value }: { label: string; value: string }) => (
   <Stack spacing={0}>
@@ -39,6 +40,15 @@ const EditProfileTabPanel = () => {
           <FormControl w="sm" textTransform="uppercase">
             <FormLabel color="gray.400">Username</FormLabel>
             <Input rounded="sm" variant="filled" bgColor={panelColor} />
+          </FormControl>
+          <FormControl w="sm" textTransform="uppercase">
+            <FormLabel color="gray.400">Avatar</FormLabel>
+            <FileUpload
+              label="Upload Avatar"
+              accept="image/*"
+              capture="user"
+              multiple={false}
+            />
           </FormControl>
         </GridItem>
         <GridItem>
