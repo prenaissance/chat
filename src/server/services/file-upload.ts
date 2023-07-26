@@ -37,7 +37,10 @@ export const uploadFile = async (
 ) => {
   const containerClient = await getContainer(blobServiceClient, containerName);
   const blockBlobClient = containerClient.getBlockBlobClient(fileName);
-  return await blockBlobClient.uploadData(fileBuffer, options);
+  return {
+    blockBlobClient,
+    response: await blockBlobClient.uploadData(fileBuffer, options),
+  };
 };
 
 export const deleteFile = async (
@@ -52,5 +55,5 @@ export const deleteFile = async (
 ) => {
   const containerClient = await getContainer(blobServiceClient, containerName);
   const blockBlobClient = containerClient.getBlockBlobClient(fileName);
-  return await blockBlobClient.deleteIfExists();
+  return { blockBlobClient, response: await blockBlobClient.deleteIfExists() };
 };

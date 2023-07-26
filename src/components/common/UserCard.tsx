@@ -8,6 +8,7 @@ import {
   Divider,
   Stack,
   Button,
+  Skeleton,
 } from "@chakra-ui/react";
 import type { Session } from "next-auth";
 import NextLink from "next/link";
@@ -46,9 +47,11 @@ const UserCard = ({ user, isOnline, showActions = true, ...props }: Props) => {
         bgColor={useColorModeValue("gray.400", "gray.900")}
         flex="0 0 auto"
       >
-        <Text fontSize="xl" fontWeight="bold">
-          {user?.name ?? "Placeholder Name"}
-        </Text>
+        <Skeleton isLoaded={!!user}>
+          <Text fontSize="xl" fontWeight="bold">
+            {user?.name ?? "Placeholder Name"}
+          </Text>
+        </Skeleton>
         <Divider my={2} />
         <Stack>
           <Text fontWeight="bold" textTransform="uppercase">
