@@ -7,7 +7,7 @@ const globalForBlobStorage = globalThis as unknown as {
 
 export const blobServiceClient =
   globalForBlobStorage.blobServiceClient ??
-  new BlobServiceClient(env.AZURE_STORAGE_CONNECTION_STRING);
+  BlobServiceClient.fromConnectionString(env.AZURE_STORAGE_CONNECTION_STRING);
 
 if (env.NODE_ENV !== "production")
   globalForBlobStorage.blobServiceClient = blobServiceClient;

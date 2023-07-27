@@ -17,7 +17,9 @@ const getContainer = async (
 
   const newContainerClient =
     blobServiceClient.getContainerClient(containerName);
-  await newContainerClient.createIfNotExists();
+  await newContainerClient.createIfNotExists({
+    access: "blob",
+  });
   containerMap.set(containerName, newContainerClient);
   return newContainerClient;
 };
