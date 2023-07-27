@@ -5,10 +5,9 @@ import {
   type AvatarProps,
   type ChakraProps,
 } from "@chakra-ui/react";
-import { type Session } from "next-auth";
 
 type Props = {
-  user?: Omit<Session["user"], "email"> & { isOnline?: boolean };
+  user?: { name: string; image?: string | null; isOnline?: boolean } | null;
   isOnline?: boolean;
   size?: AvatarProps["size"];
   badgeBorderColor?: ChakraProps["borderColor"];

@@ -10,13 +10,17 @@ import {
   Button,
   Skeleton,
 } from "@chakra-ui/react";
-import type { Session } from "next-auth";
 import NextLink from "next/link";
 
 import UserAvatar from "./UserAvatar";
 
 type Props = {
-  user?: Session["user"] & { isOnline?: boolean };
+  user?: {
+    id: string;
+    name: string;
+    image?: string | null;
+    isOnline?: boolean;
+  } | null;
   isOnline?: boolean;
   showActions?: boolean;
 } & ChakraProps;

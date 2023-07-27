@@ -22,7 +22,7 @@ export const profileRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string().min(1).max(50).optional(),
-        image: z.string().url().optional(), // including data encoded as base64
+        image: z.string().url().nullish(), // including data encoded as base64
       })
     )
     .mutation(async ({ input, ctx }) => {

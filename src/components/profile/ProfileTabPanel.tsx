@@ -9,9 +9,12 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { useSession } from "next-auth/react";
-import { type ProfileTabsStore, useProfileTabs } from "~/stores/profile-tabs";
+import {
+  type ProfileTabsStore,
+  useProfileTabsStore,
+} from "~/stores/profile-tabs";
 import UserAvatar from "../common/UserAvatar";
+import { api } from "~/utils/api";
 
 const FieldInfo = ({ label, value }: { label: string; value: string }) => (
   <Stack spacing={0}>
@@ -25,8 +28,8 @@ const FieldInfo = ({ label, value }: { label: string; value: string }) => (
 const tabsSetterSelector = (state: ProfileTabsStore) => state.setActiveTab;
 
 const ProfileTabPanel = () => {
-  const { data: session } = useSession();
-  const setActiveTab = useProfileTabs(tabsSetterSelector);
+  const profileQuery = api.profile.getProfile.useQuery();
+  const setActiveTab = useProfileTabsStore(tabsSetterSelector);
   const panelColor = useColorModeValue("gray.300", "gray.700");
   return (
     <TabPanel display="flex" flexDirection="column" h="100%">
@@ -37,13 +40,13 @@ const ProfileTabPanel = () => {
       <Box maxW="lg" rounded="xl" shadow="xl" bgColor={panelColor} p={4}>
         <HStack spacing={2} mt="6rem" alignItems="flex-end">
           <UserAvatar
-            user={session?.user}
+            user={profileQuery.data}
             size="2xl"
             isOnline
             badgeBorderColor={panelColor}
           />
           <Text fontSize="3xl" fontWeight="bold">
-            {session?.user?.name ?? "Placeholder Name"}
+            {profileQuery.data?.name ?? "Placeholder Name"}
           </Text>
           <Button
             bg={useColorModeValue("teal.500", "teal.900")}
@@ -64,9 +67,12 @@ const ProfileTabPanel = () => {
         >
           <FieldInfo
             label="Name"
-            value={session?.user?.name ?? "Default Name"}
+            value={profileQuery.data?.name ?? "Default Name"}
           />
-          <FieldInfo label="Email" value={session?.user?.email ?? "Unset"} />
+          <FieldInfo
+            label="Email"
+            value={profileQuery.data?.email ?? "Unset"}
+          />
         </Stack>
       </Box>
 

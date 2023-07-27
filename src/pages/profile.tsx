@@ -8,9 +8,12 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import type { ReactNode } from "react";
-import EditProfileTabPanel from "~/components/profile/EditProfileTabPanel";
+import EditProfileTabPanel from "~/components/profile/edit-profile-tab-panel";
 import ProfileTabPanel from "~/components/profile/ProfileTabPanel";
-import { type ProfileTabsStore, useProfileTabs } from "~/stores/profile-tabs";
+import {
+  type ProfileTabsStore,
+  useProfileTabsStore,
+} from "~/stores/profile-tabs";
 
 const StyledTab = ({ children }: { children: ReactNode }) => (
   <Tab
@@ -28,8 +31,8 @@ const activeTabsSelector = (state: ProfileTabsStore) => state.activeTab;
 const tabsSetterSelector = (state: ProfileTabsStore) => state.setActiveTab;
 
 const Profile = () => {
-  const activeTab = useProfileTabs(activeTabsSelector);
-  const setActiveTab = useProfileTabs(tabsSetterSelector);
+  const activeTab = useProfileTabsStore(activeTabsSelector);
+  const setActiveTab = useProfileTabsStore(tabsSetterSelector);
   return (
     <Tabs
       isLazy
