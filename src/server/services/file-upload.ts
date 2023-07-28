@@ -4,6 +4,11 @@ import {
   type ContainerClient,
 } from "@azure/storage-blob";
 
+type FileDestination = {
+  containerName: string;
+  fileName: string;
+};
+
 const containerMap = new Map<string, ContainerClient>();
 
 const getContainer = async (
@@ -30,9 +35,7 @@ export const uploadFile = async (
     containerName,
     fileName,
     fileBuffer,
-  }: {
-    containerName: string;
-    fileName: string;
+  }: FileDestination & {
     fileBuffer: Buffer | ArrayBuffer;
   },
   options?: BlockBlobParallelUploadOptions
@@ -45,17 +48,45 @@ export const uploadFile = async (
   };
 };
 
+export const downloadAndUploadFile = async (
+  blobServiceClient: BlobServiceClient,
+  downloadUrl: string,
+  { containerName, fileName }: FileDestination,
+  options?: BlockBlobParallelUploadOptions
+) => {
+  const downloadRequest = await fetch(downloadUrl);
+  return uploadFile(
+    blobServiceClient,
+    {
+      containerName,
+      fileName,
+      fileBuffer: await downloadRequest.arrayBuffer(),
+    },
+    {
+      ...options,
+      blobHTTPHeaders: {
+        blobContentType:
+          downloadRequest.headers.get("content-type") ??
+          options?.blobHTTPHeaders?.blobContentType,
+      },
+    }
+  );
+};
+
 export const deleteFile = async (
   blobServiceClient: BlobServiceClient,
-  {
-    containerName,
-    fileName,
-  }: {
-    containerName: string;
-    fileName: string;
-  }
+  { containerName, fileName }: FileDestination
 ) => {
   const containerClient = await getContainer(blobServiceClient, containerName);
   const blockBlobClient = containerClient.getBlockBlobClient(fileName);
   return { blockBlobClient, response: await blockBlobClient.deleteIfExists() };
+};
+
+export const fileExists = async (
+  blobServiceClient: BlobServiceClient,
+  { containerName, fileName }: FileDestination
+) => {
+  const containerClient = await getContainer(blobServiceClient, containerName);
+  const blockBlobClient = containerClient.getBlockBlobClient(fileName);
+  return await blockBlobClient.exists();
 };
