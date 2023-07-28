@@ -2,15 +2,13 @@ import { create } from "zustand";
 
 type EditUser = {
   name: string;
-  image?: string | null;
+  image: string | null;
+  description: string | null;
 };
 
 type ProfileTabsState = {
   activeTab: number;
-  editUser: {
-    name: string;
-    image?: string | null;
-  };
+  editUser: EditUser;
 };
 
 type ProfileTabsActions = {
@@ -25,6 +23,7 @@ export const useProfileTabsStore = create<ProfileTabsStore>()((set) => ({
   editUser: {
     name: "",
     image: null,
+    description: "",
   },
   setActiveTab: (activeTab: number) => set({ activeTab }),
   setEditUser: (editUser: EditUser) => set({ editUser }),

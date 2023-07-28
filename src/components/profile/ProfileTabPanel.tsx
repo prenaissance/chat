@@ -73,6 +73,10 @@ const ProfileTabPanel = () => {
             label="Email"
             value={profileQuery.data?.email ?? "Unset"}
           />
+          <FieldInfo
+            label="Description"
+            value={profileQuery.data?.description ?? "Unset"}
+          />
         </Stack>
       </Box>
 

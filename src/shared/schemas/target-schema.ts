@@ -7,7 +7,9 @@ export const userSchema = z.object({
   email: z.string().email().nullable(),
   emailVerified: z.date().nullable(),
   image: z.string().url().nullable(),
+  description: z.string().max(200).nullable(),
   createdAt: z.date(),
+  lastSeenAt: z.date(),
 }) satisfies z.ZodType<User>;
 
 export const groupSchema = z.object({

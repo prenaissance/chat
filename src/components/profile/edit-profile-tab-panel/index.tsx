@@ -1,6 +1,7 @@
 import {
   Button,
   ButtonGroup,
+  Divider,
   FormControl,
   FormLabel,
   Grid,
@@ -12,12 +13,13 @@ import {
 } from "@chakra-ui/react";
 
 import { useProfileTabsStore } from "~/stores/profile-tabs";
-import UserCard from "../../common/UserCard";
-import FileUpload from "../../common/FileUpload";
+import UserCard from "~/components/common/UserCard";
+import FileUpload from "~/components/common/FileUpload";
 import { api } from "~/utils/api";
 import { useQueryCallbacks } from "~/hooks/useQueryCallbacks";
 import { blobToBase64DataUrl } from "~/utils/encoding";
 import ConfirmationAlert from "./ConfirmationAlert";
+import EditDescriptionTextArea from "./EditDescriptionTextArea";
 
 const EditProfileTabPanel = () => {
   const editUser = useProfileTabsStore((state) => state.editUser);
@@ -30,6 +32,7 @@ const EditProfileTabPanel = () => {
       setEditUser({
         name: data.name,
         image: data.image,
+        description: data.description,
       });
     },
   });
@@ -42,7 +45,7 @@ const EditProfileTabPanel = () => {
         </Heading>
 
         <Grid gridTemplateColumns="repeat(2, 1fr)" flexGrow={1} gap={6}>
-          <GridItem>
+          <GridItem w="100%">
             <FormControl w="sm" textTransform="uppercase">
               <FormLabel color="gray.400">Username</FormLabel>
               <Input
@@ -57,6 +60,7 @@ const EditProfileTabPanel = () => {
                 bgColor={panelColor}
               />
             </FormControl>
+            <Divider my={2} />
             <FormControl w="sm" textTransform="uppercase">
               <FormLabel color="gray.400">Avatar</FormLabel>
               <ButtonGroup
@@ -87,6 +91,8 @@ const EditProfileTabPanel = () => {
                 </Button>
               </ButtonGroup>
             </FormControl>
+            <Divider my={1} />
+            <EditDescriptionTextArea />
           </GridItem>
           <GridItem>
             <Heading
@@ -109,7 +115,7 @@ const EditProfileTabPanel = () => {
                     }
               }
               isOnline
-              w="fit-content"
+              w="100%"
             />
           </GridItem>
         </Grid>

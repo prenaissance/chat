@@ -26,6 +26,7 @@ const ConfirmationAlert = () => {
       setEditUser({
         name: data.name,
         image: data.image,
+        description: data.description,
       });
     },
     onError: (error) =>
@@ -40,7 +41,10 @@ const ConfirmationAlert = () => {
   const areDetailsChanged = useMemo(
     () =>
       !profileQuery.isLoading &&
-      !shallow(editUser, pick(profileQuery.data!, ["name", "image"])),
+      !shallow(
+        editUser,
+        pick(profileQuery.data!, ["name", "image", "description"])
+      ),
     [editUser, profileQuery.data, profileQuery.isLoading]
   );
   const handleDiscard = useCallback(
@@ -49,6 +53,7 @@ const ConfirmationAlert = () => {
       setEditUser({
         name: profileQuery.data.name,
         image: profileQuery.data.image,
+        description: profileQuery.data.description,
       }),
     [profileQuery.data, setEditUser]
   );

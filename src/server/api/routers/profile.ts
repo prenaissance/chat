@@ -1,9 +1,9 @@
-import { z } from "zod";
 import sharp from "sharp";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { deleteFile, uploadFile } from "~/server/services/file-upload";
 import { urlEncodedToBuffer } from "~/server/services/encoding";
+import { editProfileSchema } from "~/shared/schemas/profile-schema";
 
 const getResizedAvatarBuffer = (buffer: Buffer | ArrayBuffer) =>
   sharp(buffer)
@@ -36,14 +36,9 @@ export const profileRouter = createTRPCRouter({
   }),
 
   updateProfile: protectedProcedure
-    .input(
-      z.object({
-        name: z.string().min(1).max(50).optional(),
-        image: z.string().url().nullish(), // including data encoded as base64
-      })
-    )
+    .input(editProfileSchema)
     .mutation(async ({ input, ctx }) => {
-      const { name, image } = input;
+      const { name, image, description } = input;
       const { prisma, session, blobServiceClient } = ctx;
       const getImageUrl = async () => {
         if (!image) {
@@ -134,6 +129,7 @@ export const profileRouter = createTRPCRouter({
         data: {
           name,
           image: imageUrl,
+          description,
         },
       });
 

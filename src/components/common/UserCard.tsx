@@ -18,7 +18,8 @@ type Props = {
   user?: {
     id: string;
     name: string;
-    image?: string | null;
+    image: string | null;
+    description: string | null;
     isOnline?: boolean;
   } | null;
   isOnline?: boolean;
@@ -61,9 +62,13 @@ const UserCard = ({ user, isOnline, showActions = true, ...props }: Props) => {
           <Text fontWeight="bold" textTransform="uppercase">
             About me
           </Text>
-          <Text color="gray.400">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Atque
-            doloremque qui veritatis error ducimus beatae.
+          <Text
+            color="gray.400"
+            fontStyle={user?.description ? "normal" : "italic"}
+            noOfLines={4}
+          >
+            {user?.description ||
+              "This user has not written a description yet."}
           </Text>
           <Text fontWeight="bold">N groups in common</Text>
         </Stack>

@@ -48,6 +48,7 @@ model User {
     email                  String?         @unique
     emailVerified          DateTime?
     image                  String?
+    description            String?
     createdAt              DateTime        @default(now())
     lastSeenAt             DateTime        @default(now())
     accounts               Account[]
