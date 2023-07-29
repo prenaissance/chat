@@ -1,9 +1,10 @@
 import { type ReactNode } from "react";
-import ChatSideBar from "./ChatSideBar";
 import { Box, Flex } from "@chakra-ui/react";
+import { useRouter } from "next/router";
+
+import ChatSideBar from "./chat-sidebar";
 import { api } from "~/utils/api";
 import { type ChatStore, useChatStore } from "~/stores/chat";
-import { useRouter } from "next/router";
 
 const addMessageSelector = (state: ChatStore) => state.addMessage;
 

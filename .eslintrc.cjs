@@ -21,7 +21,6 @@ const config = {
   plugins: ["@typescript-eslint", "react", "prettier"],
   extends: [
     "next/core-web-vitals",
-    "plugin:@typescript-eslint/recommended",
     "prettier",
   ],
   rules: {
@@ -33,8 +32,11 @@ const config = {
       },
     ],
     "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-    "@typescript-eslint/no-misused-promises": "off",
-    "@typescript-eslint/no-floating-promises": "off",
+    "@typescript-eslint/no-misused-promises": ["off", {
+      checksVoidReturn: false,
+      checksSpreads: false,
+    }],
+    "@typescript-eslint/no-floating-promises": ["off"], // does not work shitty rule!!!
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-unsafe-enum-comparison": "off",
     "@typescript-eslint/no-explicit-any": "off",

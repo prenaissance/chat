@@ -13,10 +13,11 @@ import { MessageTarget } from "@prisma/client";
 import NextLink from "next/link";
 
 import { type RouterOutputs, api } from "~/utils/api";
-import UserAvatar from "../common/UserAvatar";
+import UserAvatar from "~/components/common/UserAvatar";
 import { formatSocialMediaDate } from "~/utils/formatting";
+import CreateGroupButton from "./CreateGroupButton";
 
-const StyledStack = (props: StackProps) => (
+const StyledStack = ({ children, ...props }: StackProps) => (
   <Stack
     p={1}
     as="nav"
@@ -25,7 +26,13 @@ const StyledStack = (props: StackProps) => (
     borderRight="1px solid"
     borderColor={useColorModeValue("gray.400", "gray.600")}
     {...props}
-  />
+  >
+    <HStack justifyContent="space-between" ml={2}>
+      <Text>Conversations:</Text>
+      <CreateGroupButton size="sm" mt={1} mr={1} />
+    </HStack>
+    {children}
+  </Stack>
 );
 
 const Conversation = ({
