@@ -118,9 +118,9 @@ model Message {
     from          User           @relation("SentMessages", fields: [fromId], references: [id])
     targetType    MessageTarget
     targetUserId  String?
-    targetUser    User?          @relation("UserMessages", fields: [targetUserId], references: [id])
+    targetUser    User?          @relation("UserMessages", fields: [targetUserId], references: [id], onDelete: Cascade)
     targetGroupId String?
-    targetGroup   Group?         @relation("GroupMessages", fields: [targetGroupId], references: [id])
+    targetGroup   Group?         @relation("GroupMessages", fields: [targetGroupId], references: [id], onDelete: Cascade)
     readBy        User[]         @relation("ReadMessages")
     Conversation  Conversation[]
 
