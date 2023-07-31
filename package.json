@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "build:ws": "dotenv tsup ./src/ws-server/index.ts --clean",
     "dev": "pnpm run dev:next & pnpm run dev:ws",
     "dev:next": "next dev",
     "dev:ws": "SET NODE_ENV=development&&dotenv tsx watch ./src/server/ws-server.ts",
@@ -27,6 +28,7 @@
     "@trpc/next": "^10.34.0",
     "@trpc/react-query": "^10.34.0",
     "@trpc/server": "^10.34.0",
+    "dotenv": "^16.3.1",
     "framer-motion": "^10.12.21",
     "ioredis": "^5.3.2",
     "next": "^13.4.10",
@@ -58,6 +60,7 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "prettier": "^3.0.0",
     "prisma": "^5.0.0",
+    "tsup": "^7.1.0",
     "tsx": "^3.12.7",
     "typescript": "^5.1.6"
   },
@@ -65,3 +68,4 @@
     "initVersion": "7.14.1"
   }
 }
+

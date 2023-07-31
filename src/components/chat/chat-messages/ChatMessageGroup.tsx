@@ -1,7 +1,7 @@
 import { Box, Text, Flex, Stack, useColorModeValue } from "@chakra-ui/react";
-import { type Session } from "next-auth";
 
-import UserAvatar from "../../common/UserAvatar";
+import { type OnlineStatusUser } from "~/shared/dtos/user";
+import UserAvatar from "~/components/common/UserAvatar";
 import MessageMeta from "./MessageMeta";
 
 const URL_ENCODED_CHAT_TAIL_LEFT =
@@ -16,7 +16,7 @@ export type MessageGroup = {
     createdAt: Date;
     isSent: boolean;
   }[];
-  user: Session["user"] & { isOnline: boolean };
+  user: Pick<OnlineStatusUser, "id" | "name" | "image" | "isOnline">;
   isSelf: boolean;
 };
 
