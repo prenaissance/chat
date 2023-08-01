@@ -26,25 +26,58 @@ const groupsRouter = createTRPCRouter({
       const { name, members } = input;
       const membersWithSelf = [...new Set(members).add(session.user.id)];
 
-      const group = await prisma.group.create({
-        data: {
-          name,
-          users: {
-            connect: membersWithSelf.map((id) => ({
-              id,
-            })),
+      const group = await prisma.$transaction(async (trans) => {
+        const group = await trans.group.create({
+          data: {
+            name,
+            users: {
+              connect: membersWithSelf.map((id) => ({
+                id,
+              })),
+            },
+            messages: {
+              create: [
+                {
+                  content: `Group created by ${session.user.name}`,
+                  source: MessageSource.System,
+                  targetType: MessageTarget.Group,
+                  fromId: session.user.id,
+                },
+              ],
+            },
           },
-          messages: {
-            create: [
-              {
-                content: `Group created by ${session.user.name}`,
-                source: MessageSource.System,
-                targetType: MessageTarget.Group,
-                fromId: session.user.id,
-              },
-            ],
+          include: {
+            messages: true,
           },
-        },
+        });
+
+        const lastMessageId = group.messages[0]!.id;
+        await trans.conversation.create({
+          data: {
+            userId: session.user.id,
+            targetGroupId: group.id,
+            lastMessageId,
+            targetType: MessageTarget.Group,
+            unreadCount: 0,
+          },
+        });
+        await Promise.all(
+          membersWithSelf
+            .filter((id) => id !== session.user.id)
+            .map((id) =>
+              trans.conversation.create({
+                data: {
+                  userId: id,
+                  targetGroupId: group.id,
+                  lastMessageId,
+                  targetType: MessageTarget.Group,
+                  unreadCount: 1,
+                },
+              })
+            )
+        );
+
+        return group;
       });
 
       return group;
