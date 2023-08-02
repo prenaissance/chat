@@ -20,6 +20,7 @@ import { type ChatStore, useChatStore } from "~/stores/chat";
 import { api } from "~/utils/api";
 import ChatMessages from "~/components/chat/chat-messages";
 import UserCard from "~/components/common/UserCard";
+import { useQueryCallbacks } from "~/hooks/useQueryCallbacks";
 
 const selector = ({
   setMessages,
@@ -77,18 +78,13 @@ const UserChat = () => {
   // might be bad pattern, but this branch is not subscribed to conversations
   useEffect(() => readUserConversation(userId), [userId, readUserConversation]);
 
-  useEffect(() => {
-    if (messagesQuery.isSuccess) {
-      setMessages(messagesQuery.data);
+  useQueryCallbacks({
+    query: messagesQuery,
+    onSuccess: (data) => {
+      setMessages(data);
       setIsLoadingMessages(false);
-    }
-  }, [
-    messagesQuery.isSuccess,
-    userId,
-    messagesQuery.data,
-    setMessages,
-    setIsLoadingMessages,
-  ]);
+    },
+  });
 
   return (
     <ChatLayout>
