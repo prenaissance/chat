@@ -3,6 +3,10 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { MessageSource, MessageTarget } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { type MessageDTO } from "~/shared/dtos/chat";
+import { toTargetDto } from "~/shared/dtos/target";
+import { mapOnlineStatus } from "~/server/services/online-service";
+import { RedisChannel } from "~/server/services/singletons/redis";
 
 const groupsRouter = createTRPCRouter({
   getGroups: protectedProcedure.query(async ({ ctx }) => {
@@ -149,6 +153,140 @@ const groupsRouter = createTRPCRouter({
       });
 
       return updatedGroup;
+    }),
+
+  sendMessage: protectedProcedure
+    .input(
+      z.object({
+        message: z.string().min(1).max(1000),
+        targetGroupId: z.string().cuid(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { message, targetGroupId } = input;
+      const { session, prisma, redis } = ctx;
+
+      const fromId = session.user.id;
+
+      const messageData: MessageDTO = await prisma.$transaction(async (trs) => {
+        const rawMessageData = await trs.message.create({
+          data: {
+            content: message,
+            source: MessageSource.User,
+            fromId,
+            targetType: MessageTarget.Group,
+            targetGroupId,
+            readBy: {
+              connect: {
+                id: fromId,
+              },
+            },
+          },
+          include: {
+            from: true,
+            targetGroup: {
+              include: {
+                users: true,
+              },
+            },
+          },
+        });
+
+        const messageData = toTargetDto(rawMessageData);
+
+        const group = await trs.group.findUniqueOrThrow({
+          where: {
+            id: targetGroupId,
+          },
+          include: {
+            users: true,
+          },
+        });
+
+        await Promise.all(
+          group.users.map(async (user) => {
+            await trs.conversation.upsert({
+              where: {
+                userId_targetType_targetGroupId: {
+                  userId: user.id,
+                  targetType: MessageTarget.Group,
+                  targetGroupId: fromId,
+                },
+              },
+              create: {
+                userId: user.id,
+                targetType: MessageTarget.Group,
+                targetUserId: fromId,
+                lastMessageId: messageData.id,
+                unreadCount: user.id === fromId ? 0 : 1,
+              },
+              update: {
+                lastMessageId: messageData.id,
+                unreadCount:
+                  user.id === fromId
+                    ? 0
+                    : {
+                        increment: 1,
+                      },
+              },
+            });
+          })
+        );
+
+        return {
+          ...messageData,
+          from: mapOnlineStatus(messageData.from),
+        };
+      });
+
+      const messageJSON = JSON.stringify(messageData);
+      await redis.publish(RedisChannel.ChatMessages, messageJSON);
+      return messageData;
+    }),
+
+  getMessages: protectedProcedure
+    .input(
+      z.object({
+        targetGroupId: z.string().cuid(),
+      })
+    )
+    .query(async ({ input, ctx }): Promise<MessageDTO[]> => {
+      const { targetGroupId } = input;
+      const { session, prisma } = ctx;
+
+      // set all messages from this user to read
+      await prisma.conversation.updateMany({
+        where: {
+          userId: session.user.id,
+          targetGroupId,
+          targetType: MessageTarget.Group,
+        },
+        data: {
+          unreadCount: 0,
+        },
+      });
+
+      const groupMessages = await prisma.message.findMany({
+        where: {
+          targetGroupId,
+        },
+        include: {
+          from: true,
+          targetGroup: {
+            include: {
+              users: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+      });
+
+      return groupMessages.map(toTargetDto).map((message) => ({
+        ...message,
+        from: mapOnlineStatus(message.from),
+      }));
     }),
 });
 

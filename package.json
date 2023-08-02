@@ -7,7 +7,7 @@
     "build:ws": "dotenv tsup ./src/ws-server/index.ts --clean",
     "dev": "pnpm run dev:next & pnpm run dev:ws",
     "dev:next": "next dev",
-    "dev:ws": "SET NODE_ENV=development&&dotenv tsx watch ./src/server/ws-server.ts",
+    "dev:ws": "SET NODE_ENV=development&&dotenv tsx watch ./src/ws-server/index.ts",
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start"
@@ -68,4 +68,3 @@
     "initVersion": "7.14.1"
   }
 }
-

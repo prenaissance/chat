@@ -101,91 +101,6 @@ export const chatRouter = createTRPCRouter({
       return messageData;
     }),
 
-  sendGroupMessage: protectedProcedure
-    .input(
-      z.object({
-        message: z.string().min(1).max(1000),
-        targetGroupId: z.string().cuid(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { message, targetGroupId } = input;
-      const { session, prisma, redis } = ctx;
-
-      const fromId = session.user.id;
-
-      const messageData: MessageDTO = await prisma.$transaction(async (trs) => {
-        const rawMessageData = await trs.message.create({
-          data: {
-            content: message,
-            source: MessageSource.User,
-            fromId,
-            targetType: MessageTarget.Group,
-            targetGroupId,
-            readBy: {
-              connect: {
-                id: fromId,
-              },
-            },
-          },
-          include: {
-            from: true,
-            targetGroup: true,
-          },
-        });
-
-        const messageData = toTargetDto(rawMessageData);
-
-        const group = await trs.group.findUniqueOrThrow({
-          where: {
-            id: targetGroupId,
-          },
-          include: {
-            users: true,
-          },
-        });
-
-        await Promise.all(
-          group.users.map(async (user) => {
-            await trs.conversation.upsert({
-              where: {
-                userId_targetType_targetGroupId: {
-                  userId: user.id,
-                  targetType: MessageTarget.Group,
-                  targetGroupId: fromId,
-                },
-              },
-              create: {
-                userId: user.id,
-                targetType: MessageTarget.Group,
-                targetUserId: fromId,
-                lastMessageId: messageData.id,
-                unreadCount: user.id === fromId ? 0 : 1,
-              },
-              update: {
-                lastMessageId: messageData.id,
-                unreadCount:
-                  user.id === fromId
-                    ? 0
-                    : {
-                        increment: 1,
-                      },
-              },
-            });
-          })
-        );
-
-        return {
-          ...messageData,
-          from: mapOnlineStatus(messageData.from),
-        };
-      });
-
-      const messageJSON = JSON.stringify(messageData);
-      await redis.publish(RedisChannel.ChatMessages, messageJSON);
-      return messageData;
-    }),
-
   onMessage: protectedProcedure.subscription(({ ctx }) => {
     const { subscriberRedis, session } = ctx;
 
@@ -195,16 +110,22 @@ export const chatRouter = createTRPCRouter({
           return;
         }
         const messageData = JSON.parse(message) as MessageDTO;
-        // TODO: check if user is in group
-        if (messageData.targetUser?.id === session.user.id) {
+        const isToUser =
+          messageData.targetType === MessageTarget.User &&
+          messageData.targetUserId === session.user.id;
+        const isUserInGroup =
+          messageData.targetType === MessageTarget.Group &&
+          messageData.targetGroup.users
+            .map((u) => u.id)
+            .includes(session.user.id);
+
+        if (isToUser || isUserInGroup) {
           emitter.next(messageData);
         }
       };
       subscriberRedis.on("message", handler);
 
-      return () => {
-        subscriberRedis.off("message", handler);
-      };
+      return () => void subscriberRedis.off("message", handler);
     });
   }),
 
@@ -253,48 +174,6 @@ export const chatRouter = createTRPCRouter({
       });
 
       return messages.map(toTargetDto).map((message) => ({
-        ...message,
-        from: mapOnlineStatus(message.from),
-      }));
-    }),
-
-  getGroupMessages: protectedProcedure
-    .input(
-      z.object({
-        targetGroupId: z.string().cuid(),
-      })
-    )
-    .query(async ({ input, ctx }): Promise<MessageDTO[]> => {
-      const { targetGroupId } = input;
-      const { session, prisma } = ctx;
-
-      // set all messages from this user to read
-      await prisma.conversation.updateMany({
-        where: {
-          userId: session.user.id,
-          targetGroupId,
-          targetType: MessageTarget.Group,
-        },
-        data: {
-          unreadCount: 0,
-        },
-      });
-
-      const groupMessages = await prisma.message.findMany({
-        where: {
-          targetGroupId,
-        },
-        include: {
-          from: true,
-          targetUser: true,
-          targetGroup: true,
-        },
-        orderBy: {
-          createdAt: "asc",
-        },
-      });
-
-      return groupMessages.map(toTargetDto).map((message) => ({
         ...message,
         from: mapOnlineStatus(message.from),
       }));

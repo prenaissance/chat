@@ -16,7 +16,10 @@ export const groupSchema = z.object({
   id: z.string().cuid(),
   name: z.string(),
   createdAt: z.date(),
+  users: z.array(userSchema),
 }) satisfies z.ZodType<Group>;
+
+export type TargetGroup = z.infer<typeof groupSchema>;
 
 const userTargetSchema = z.object({
   targetType: z.literal(MessageTarget.User),

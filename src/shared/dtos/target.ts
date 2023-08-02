@@ -1,4 +1,5 @@
-import { type User, MessageTarget, type Group } from "@prisma/client";
+import { type User, MessageTarget } from "@prisma/client";
+import { type TargetGroup } from "../schemas/target-schema";
 
 export type TargetInput =
   | {
@@ -6,21 +7,21 @@ export type TargetInput =
       targetUserId?: string | null;
       targetUser?: User | null;
       targetGroupId?: string | null;
-      targetGroup?: Group | null;
+      targetGroup?: TargetGroup | null;
     }
   | {
       targetType: MessageTarget;
       targetUserId?: string;
       targetUser?: User;
       targetGroupId?: string | null;
-      targetGroup?: Group | null;
+      targetGroup?: TargetGroup | null;
     }
   | {
       targetType: MessageTarget;
       targetUserId?: string | null;
       targetUser?: User | null;
       targetGroupId?: string;
-      targetGroup?: Group;
+      targetGroup?: TargetGroup;
     };
 
 export const toTargetDto = <T extends TargetInput>(input: T) =>
