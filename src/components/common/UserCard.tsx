@@ -12,16 +12,15 @@ import {
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 
-import UserAvatar from "./UserAvatar";
+import UserAvatar, { type UserAvatarInfo } from "./UserAvatar";
+
+export type UserInfo = UserAvatarInfo & {
+  id: string;
+  description?: string | null;
+};
 
 type Props = {
-  user?: {
-    id: string;
-    name: string;
-    image: string | null;
-    description: string | null;
-    isOnline?: boolean;
-  } | null;
+  user?: UserInfo | null;
   isOnline?: boolean;
   showActions?: boolean;
 } & ChakraProps;

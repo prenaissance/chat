@@ -6,8 +6,14 @@ import {
   type ChakraProps,
 } from "@chakra-ui/react";
 
-type Props = {
-  user?: { name: string; image?: string | null; isOnline?: boolean } | null;
+export type UserAvatarInfo = {
+  name: string;
+  image?: string | null;
+  isOnline?: boolean;
+};
+
+export type UserAvatarProps = {
+  user?: UserAvatarInfo | null;
   isOnline?: boolean;
   size?: AvatarProps["size"];
   badgeBorderColor?: ChakraProps["borderColor"];
@@ -19,12 +25,13 @@ const UserAvatar = ({
   size = "md",
   badgeBorderColor,
   ...props
-}: Props) =>
+}: UserAvatarProps) =>
   !!user ? (
     <Avatar
       size={size}
       name={user.name ?? "Placeholder Name"}
       src={user.image ?? undefined}
+      {...props}
     >
       <AvatarBadge
         boxSize="1em"
