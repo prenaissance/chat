@@ -7,6 +7,7 @@ import { RedisChannel } from "~/server/services/singletons/redis";
 import { type MessageDTO } from "~/shared/dtos/chat";
 import { toTargetDto } from "~/shared/dtos/target";
 import { mapUserOnlineStatus } from "../../services/online-service";
+import SuperJSON from "superjson";
 
 export const chatRouter = createTRPCRouter({
   sendUserMessage: protectedProcedure
@@ -96,28 +97,32 @@ export const chatRouter = createTRPCRouter({
         };
       });
 
-      const messageJson = JSON.stringify(messageData);
+      const messageJson = SuperJSON.stringify(messageData);
       await redis.publish(RedisChannel.ChatMessages, messageJson);
       return messageData;
     }),
 
   onMessage: protectedProcedure.subscription(({ ctx }) => {
     const { subscriberRedis, session } = ctx;
+    const userId = session.user.id;
 
     return observable<MessageDTO>((emitter) => {
       const handler = (channel: string, message: string) => {
         if (channel !== RedisChannel.ChatMessages.toString()) {
           return;
         }
-        const messageData = JSON.parse(message) as MessageDTO;
+        const messageData = SuperJSON.parse<MessageDTO>(message);
+        const isOwnMessage = messageData.from.id === userId;
+        if (isOwnMessage) {
+          return;
+        }
+
         const isToUser =
           messageData.targetType === MessageTarget.User &&
-          messageData.targetUserId === session.user.id;
+          messageData.targetUserId === userId;
         const isUserInGroup =
           messageData.targetType === MessageTarget.Group &&
-          messageData.targetGroup.users
-            .map((u) => u.id)
-            .includes(session.user.id);
+          messageData.targetGroup.users.map((u) => u.id).includes(userId);
 
         if (isToUser || isUserInGroup) {
           emitter.next(messageData);

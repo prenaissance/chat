@@ -11,6 +11,7 @@ import {
   mapUserOnlineStatus,
 } from "~/server/services/online-service";
 import { RedisChannel } from "~/server/services/singletons/redis";
+import SuperJSON from "superjson";
 
 const groupsRouter = createTRPCRouter({
   getGroup: protectedProcedure
@@ -271,7 +272,7 @@ const groupsRouter = createTRPCRouter({
         };
       });
 
-      const messageJSON = JSON.stringify(messageData);
+      const messageJSON = SuperJSON.stringify(messageData);
       await redis.publish(RedisChannel.ChatMessages, messageJSON);
       return messageData;
     }),
