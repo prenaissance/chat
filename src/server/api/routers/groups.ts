@@ -120,6 +120,69 @@ const groupsRouter = createTRPCRouter({
       return group;
     }),
 
+  editGroupName: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.string().cuid(),
+        name: z.string().min(1).max(50),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { prisma, session } = ctx;
+      const { groupId, name } = input;
+
+      const group = await prisma.group.findUnique({
+        where: {
+          id: groupId,
+        },
+        include: {
+          users: {
+            where: {
+              id: session.user.id,
+            },
+          },
+        },
+      });
+
+      if (!group) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Group not found",
+        });
+      }
+
+      if (!group.users.length) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not a member of the group",
+        });
+      }
+
+      const updatedGroup = await prisma.group.update({
+        where: {
+          id: groupId,
+        },
+        data: {
+          name,
+          messages: {
+            create: [
+              {
+                content: `Group name changed to ${name}`,
+                source: MessageSource.System,
+                targetType: MessageTarget.Group,
+                fromId: session.user.id,
+              },
+            ],
+          },
+        },
+        include: {
+          messages: true,
+        },
+      });
+
+      return updatedGroup;
+    }),
+
   addUsersToGroup: protectedProcedure
     .input(
       z.object({
@@ -186,6 +249,82 @@ const groupsRouter = createTRPCRouter({
       });
 
       return updatedGroup;
+    }),
+
+  leaveGroup: protectedProcedure
+    .input(z.string().cuid())
+    .mutation(async ({ ctx, input: groupId }) => {
+      const { prisma, session } = ctx;
+      const userId = session.user.id;
+      const group = await prisma.group.findUnique({
+        where: {
+          id: groupId,
+        },
+        include: {
+          users: true,
+        },
+      });
+
+      if (!group) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Group not found",
+        });
+      }
+
+      if (!group.users.some(({ id }) => id === userId)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not in this group",
+        });
+      }
+
+      return await prisma.$transaction(async (trans) => {
+        await trans.conversation.delete({
+          where: {
+            userId_targetType_targetGroupId: {
+              userId,
+              targetType: MessageTarget.Group,
+              targetGroupId: groupId,
+            },
+          },
+        });
+
+        if (group.users.length === 1) {
+          await trans.group.delete({
+            where: {
+              id: groupId,
+            },
+          });
+
+          return "Group deleted";
+        }
+
+        await trans.group.update({
+          where: {
+            id: groupId,
+          },
+          data: {
+            users: {
+              disconnect: {
+                id: userId,
+              },
+            },
+            messages: {
+              create: [
+                {
+                  content: `User "${session.user.name}" left the group`,
+                  source: MessageSource.System,
+                  targetType: MessageTarget.Group,
+                  fromId: session.user.id,
+                },
+              ],
+            },
+          },
+        });
+
+        return "You left the group";
+      });
     }),
 
   sendMessage: protectedProcedure
