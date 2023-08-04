@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import { FriendStatus } from "~/shared/dtos/friends";
 import { getFriendStatus } from "../../services/friend-status-service";
-import { mapOnlineStatus } from "../../services/online-service";
+import { mapUserOnlineStatus } from "../../services/online-service";
 import { omit } from "~/utils/reflections";
 
 export const friendsRouter = createTRPCRouter({
@@ -20,7 +20,7 @@ export const friendsRouter = createTRPCRouter({
       },
     });
 
-    return friends.map(mapOnlineStatus);
+    return friends.map(mapUserOnlineStatus);
   }),
 
   getFriendsWithRequestDate: protectedProcedure.query(async ({ ctx }) => {
@@ -44,7 +44,7 @@ export const friendsRouter = createTRPCRouter({
         ...omit(friend, ["sentFriendRequests"]),
         friendsSince: friend.sentFriendRequests[0]!.updatedAt,
       }))
-      .map(mapOnlineStatus);
+      .map(mapUserOnlineStatus);
   }),
 
   getOnlineFriends: protectedProcedure.query(async ({ ctx }) => {

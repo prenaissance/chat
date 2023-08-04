@@ -1,14 +1,46 @@
+import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { MessageSource, MessageTarget } from "@prisma/client";
+
 import { createGroupSchema } from "~/shared/schemas/group-schema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { z } from "zod";
-import { MessageSource, MessageTarget } from "@prisma/client";
-import { TRPCError } from "@trpc/server";
 import { type MessageDTO } from "~/shared/dtos/chat";
 import { toTargetDto } from "~/shared/dtos/target";
-import { mapOnlineStatus } from "~/server/services/online-service";
+import {
+  mapGroupOnlineStatus,
+  mapUserOnlineStatus,
+} from "~/server/services/online-service";
 import { RedisChannel } from "~/server/services/singletons/redis";
 
 const groupsRouter = createTRPCRouter({
+  getGroup: protectedProcedure
+    .input(z.string().cuid())
+    .query(async ({ ctx, input: id }) => {
+      const { prisma, session } = ctx;
+
+      const group = await prisma.group.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          users: {
+            orderBy: {
+              name: "asc",
+            },
+          },
+        },
+      });
+
+      if (!group) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Group not found",
+        });
+      }
+
+      return mapGroupOnlineStatus(group, session.user.id);
+    }),
+
   getGroups: protectedProcedure.query(async ({ ctx }) => {
     const { prisma, session } = ctx;
     const { groups } = await prisma.user.findUniqueOrThrow({
@@ -203,39 +235,39 @@ const groupsRouter = createTRPCRouter({
           },
         });
 
-        await Promise.all(
-          group.users.map(async (user) => {
-            await trs.conversation.upsert({
-              where: {
-                userId_targetType_targetGroupId: {
-                  userId: user.id,
-                  targetType: MessageTarget.Group,
-                  targetGroupId: fromId,
-                },
-              },
-              create: {
-                userId: user.id,
-                targetType: MessageTarget.Group,
-                targetUserId: fromId,
-                lastMessageId: messageData.id,
-                unreadCount: user.id === fromId ? 0 : 1,
-              },
-              update: {
-                lastMessageId: messageData.id,
-                unreadCount:
-                  user.id === fromId
-                    ? 0
-                    : {
-                        increment: 1,
-                      },
-              },
-            });
-          })
-        );
+        await trs.conversation.update({
+          where: {
+            userId_targetType_targetGroupId: {
+              userId: fromId,
+              targetType: MessageTarget.Group,
+              targetGroupId,
+            },
+          },
+          data: {
+            lastMessageId: rawMessageData.id,
+            unreadCount: 0,
+          },
+        });
+
+        await trs.conversation.updateMany({
+          where: {
+            targetGroupId,
+            targetType: MessageTarget.Group,
+            userId: {
+              in: group.users.map(({ id }) => id).filter((id) => id !== fromId),
+            },
+          },
+          data: {
+            lastMessageId: rawMessageData.id,
+            unreadCount: {
+              increment: 1,
+            },
+          },
+        });
 
         return {
           ...messageData,
-          from: mapOnlineStatus(messageData.from),
+          from: mapUserOnlineStatus(messageData.from),
         };
       });
 
@@ -285,7 +317,7 @@ const groupsRouter = createTRPCRouter({
 
       return groupMessages.map(toTargetDto).map((message) => ({
         ...message,
-        from: mapOnlineStatus(message.from),
+        from: mapUserOnlineStatus(message.from),
       }));
     }),
 });

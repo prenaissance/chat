@@ -6,7 +6,7 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { RedisChannel } from "~/server/services/singletons/redis";
 import { type MessageDTO } from "~/shared/dtos/chat";
 import { toTargetDto } from "~/shared/dtos/target";
-import { mapOnlineStatus } from "../../services/online-service";
+import { mapUserOnlineStatus } from "../../services/online-service";
 
 export const chatRouter = createTRPCRouter({
   sendUserMessage: protectedProcedure
@@ -92,7 +92,7 @@ export const chatRouter = createTRPCRouter({
 
         return {
           ...messageData,
-          from: mapOnlineStatus(messageData.from),
+          from: mapUserOnlineStatus(messageData.from),
         };
       });
 
@@ -175,7 +175,7 @@ export const chatRouter = createTRPCRouter({
 
       return messages.map(toTargetDto).map((message) => ({
         ...message,
-        from: mapOnlineStatus(message.from),
+        from: mapUserOnlineStatus(message.from),
       }));
     }),
 });

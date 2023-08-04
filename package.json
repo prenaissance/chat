@@ -5,7 +5,7 @@
   "scripts": {
     "build": "next build",
     "build:ws": "dotenv tsup ./src/ws-server/index.ts --clean",
-    "dev": "pnpm run dev:next & pnpm run dev:ws",
+    "dev": "concurrently -n next,ws -c red,cyan \"pnpm run dev:next\" \"pnpm run dev:ws\"",
     "dev:next": "next dev",
     "dev:ws": "SET NODE_ENV=development&&dotenv tsx watch ./src/ws-server/index.ts",
     "postinstall": "prisma generate",
@@ -51,6 +51,7 @@
     "@types/ws": "^8.5.5",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "concurrently": "^8.2.0",
     "dotenv-cli": "^7.2.1",
     "eslint": "^8.45.0",
     "eslint-config-next": "^13.4.10",

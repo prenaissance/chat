@@ -141,9 +141,9 @@ model Conversation {
     unreadCount   Int           @default(0)
     targetType    MessageTarget
     targetUserId  String?
-    targetUser    User?         @relation("UserTargetConversations", fields: [targetUserId], references: [id])
+    targetUser    User?         @relation("UserTargetConversations", fields: [targetUserId], references: [id], onDelete: Cascade)
     targetGroupId String?
-    targetGroup   Group?        @relation(fields: [targetGroupId], references: [id])
+    targetGroup   Group?        @relation(fields: [targetGroupId], references: [id], onDelete: Cascade)
 
     @@unique([userId, targetType, targetUserId])
     @@unique([userId, targetType, targetGroupId])

@@ -12,8 +12,13 @@ type ChatState = {
 };
 
 type ChatActions = {
-  addMessage: (message: MessageDTO) => void;
-  addMessageToConversation: (message: MessageDTO) => void;
+  addMessage: ({
+    message,
+    isFromSelf,
+  }: {
+    message: MessageDTO;
+    isFromSelf?: boolean;
+  }) => void;
   setMessages: (messages: MessageDTO[]) => void;
   setIsLoadingMessages: (isLoading: boolean) => void;
   rollbackMessage: (message: MessageDTO) => void;
@@ -25,32 +30,30 @@ type ChatActions = {
 
 export type ChatStore = ChatState & ChatActions;
 
-export const useChatStore = create<ChatStore>((set) => ({
+export const useChatStore = create<ChatStore>((set, get) => ({
   conversations: [],
   messages: [],
   isLoadingMessages: true,
-  addMessage: (message) => {
-    set((state) => ({ messages: [...state.messages, message] }));
-  },
-  addMessageToConversation: (message) => {
-    set((state) => {
-      const conversation = state.conversations.find(
-        (conversation) =>
-          conversation.targetUserId === message.targetUserId ||
-          conversation.targetGroupId === message.targetGroupId
-      );
+  addMessage: ({ message, isFromSelf = true }) => {
+    const { conversations, messages } = get();
+    const conversation = conversations.find(
+      (conversation) =>
+        conversation.targetUserId === message.targetUserId ||
+        conversation.targetGroupId === message.targetGroupId
+    );
+    const newConversations = conversations.map((c) =>
+      c.id === conversation?.id
+        ? {
+            ...c,
+            lastMessage: message,
+            unreadCount: isFromSelf ? 0 : c.unreadCount + 1,
+          }
+        : c
+    );
 
-      if (!conversation) {
-        return state;
-      }
-
-      return {
-        conversations: state.conversations.map((c) =>
-          c.id === conversation.id
-            ? { ...c, lastMessage: message, unreadCount: c.unreadCount + 1 }
-            : c
-        ),
-      };
+    set({
+      conversations: newConversations,
+      messages: [...messages, message],
     });
   },
   setIsLoadingMessages: (isLoading) => {

@@ -111,7 +111,6 @@ const CreateGroupButton = (props: Props) => {
     (data) => createGroupMutation.mutateAsync(data),
     [createGroupMutation]
   );
-  console.log(errors);
 
   return (
     <>

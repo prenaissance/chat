@@ -19,8 +19,8 @@ import UserAvatar from "~/components/common/UserAvatar";
 import { type ChatStore, useChatStore } from "~/stores/chat";
 import { api } from "~/utils/api";
 import ChatMessages from "~/components/chat/chat-messages";
-import UserCard from "~/components/common/UserCard";
 import { useQueryCallbacks } from "~/hooks/useQueryCallbacks";
+import UserList from "~/components/common/UserList";
 
 const selector = ({
   setMessages,
@@ -39,28 +39,28 @@ const selector = ({
 const UserChat = () => {
   const {
     setMessages,
+    addMessage,
     readUserConversation,
     setIsLoadingMessages,
-    addMessage,
   } = useChatStore(selector, shallow);
   const router = useRouter();
-  const userId = router.query.id as string;
-  const userQuery = api.users.getUser.useQuery({
-    id: userId,
+  const groupId = router.query.id as string;
+  const groupQuery = api.groups.getGroup.useQuery(groupId, {
+    enabled: !!groupId,
   });
 
   const [typedMessage, setTypedMessage] = useState("");
 
-  const messagesQuery = api.chat.getUserMessages.useQuery(
+  const messagesQuery = api.groups.getMessages.useQuery(
     {
-      targetUserId: userId,
+      targetGroupId: groupId,
     },
     {
-      enabled: !!userId,
+      enabled: !!groupId,
     }
   );
 
-  const sendMessageMutation = api.chat.sendUserMessage.useMutation({
+  const sendMessageMutation = api.groups.sendMessage.useMutation({
     onSuccess: (message) =>
       addMessage({
         message,
@@ -73,14 +73,17 @@ const UserChat = () => {
   const handleSendMessage = () => {
     sendMessageMutation.mutate({
       message: typedMessage,
-      targetUserId: userId,
+      targetGroupId: groupId,
     });
 
     setTypedMessage("");
   };
 
   // might be bad pattern, but this branch is not subscribed to conversations
-  useEffect(() => readUserConversation(userId), [userId, readUserConversation]);
+  useEffect(
+    () => readUserConversation(groupId),
+    [groupId, readUserConversation]
+  );
 
   useQueryCallbacks({
     query: messagesQuery,
@@ -100,10 +103,10 @@ const UserChat = () => {
             shadow="lg"
             bgColor={useColorModeValue("white", "gray.800")}
           >
-            <UserAvatar user={userQuery.data} size="sm" />
-            <Skeleton isLoaded={!userQuery.isLoading} w="min(12rem, 50%)">
+            <UserAvatar user={groupQuery.data} size="sm" />
+            <Skeleton isLoaded={!groupQuery.isLoading} w="min(12rem, 50%)">
               <chakra.h1 fontSize="xl">
-                {userQuery.data?.name ?? "Placeholder Name"}
+                {groupQuery.data?.name ?? "Placeholder Name"}
               </chakra.h1>
             </Skeleton>
             <IconButton
@@ -144,16 +147,15 @@ const UserChat = () => {
           </Box>
         </Flex>
         <Show above="xl">
-          <chakra.aside
-            display="flex"
-            // alignItems="center"
-            w={80}
-            h="100%"
-            borderLeft="1px solid"
+          <UserList
             borderColor={useColorModeValue("gray.400", "gray.600")}
-          >
-            <UserCard m={2} user={userQuery.data} showActions={false} />
-          </chakra.aside>
+            borderLeftWidth="1px"
+            h="100%"
+            title="Group members:"
+            fallbackDescription="No members"
+            isLoading={groupQuery.isLoading}
+            users={groupQuery.data?.users}
+          />
         </Show>
       </Flex>
     </ChatLayout>

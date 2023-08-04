@@ -19,7 +19,10 @@ const ChatLayout = ({ children }: { children: ReactNode }) => {
         message.targetUserId === targetId ||
         message.targetGroupId === targetId
       ) {
-        addMessage(message);
+        addMessage({
+          message,
+          isFromSelf: false,
+        });
       }
     },
   });

@@ -1,4 +1,4 @@
-export const mapOnlineStatus = <UserT extends { lastSeenAt: Date }>(
+export const mapUserOnlineStatus = <UserT extends { lastSeenAt: Date }>(
   user: UserT
 ) => {
   const now = new Date();
@@ -8,5 +8,23 @@ export const mapOnlineStatus = <UserT extends { lastSeenAt: Date }>(
   return {
     ...user,
     isOnline,
+  };
+};
+
+export const mapGroupOnlineStatus = <
+  UserT extends { id: string; lastSeenAt: Date },
+  GroupT extends { users: UserT[] },
+>(
+  group: GroupT,
+  selfId?: string
+) => {
+  const mappedUsers = group.users.map(mapUserOnlineStatus);
+  const isOnline = mappedUsers
+    .filter(({ id }) => id !== selfId)
+    .some((user) => user.isOnline);
+  return {
+    ...group,
+    isOnline,
+    users: mappedUsers,
   };
 };
