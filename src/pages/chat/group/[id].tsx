@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
-import { ArrowForwardIcon, InfoIcon } from "@chakra-ui/icons";
+import { ArrowForwardIcon } from "@chakra-ui/icons";
 import {
   Box,
   Flex,
   Show,
   useColorModeValue,
   chakra,
-  HStack,
-  Skeleton,
   IconButton,
   Input,
 } from "@chakra-ui/react";
@@ -15,12 +13,12 @@ import { useRouter } from "next/router";
 import { shallow } from "zustand/shallow";
 
 import ChatLayout from "~/components/chat/ChatLayout";
-import UserAvatar from "~/components/common/UserAvatar";
 import { type ChatStore, useChatStore } from "~/stores/chat";
 import { api } from "~/utils/api";
 import ChatMessages from "~/components/chat/chat-messages";
 import { useQueryCallbacks } from "~/hooks/useQueryCallbacks";
 import UserList from "~/components/common/UserList";
+import GroupChatHeader from "~/components/chat/group/GroupChatHeader";
 
 const selector = ({
   setMessages,
@@ -95,28 +93,10 @@ const UserChat = () => {
     <ChatLayout>
       <Flex h="100%" w="100%">
         <Flex flexDirection="column" flexGrow={1}>
-          <HStack
-            py={1}
-            px={2}
-            as="header"
-            h={12}
-            shadow="lg"
-            bgColor={useColorModeValue("white", "gray.800")}
-          >
-            <UserAvatar user={groupQuery.data} size="sm" />
-            <Skeleton isLoaded={!groupQuery.isLoading} w="min(12rem, 50%)">
-              <chakra.h1 fontSize="xl">
-                {groupQuery.data?.name ?? "Placeholder Name"}
-              </chakra.h1>
-            </Skeleton>
-            <IconButton
-              ml="auto"
-              variant="ghost"
-              size="md"
-              aria-label="Info about user"
-              icon={<InfoIcon />}
-            />
-          </HStack>
+          <GroupChatHeader
+            group={groupQuery.data}
+            isLoading={groupQuery.isLoading}
+          />
           <Box h="calc(100% - 3rem)" px={2} py={4}>
             <ChatMessages h="calc(100% - 2rem)" overflowY="auto" />
             <chakra.form
