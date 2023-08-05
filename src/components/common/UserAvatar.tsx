@@ -5,12 +5,7 @@ import {
   type AvatarProps,
   type ChakraProps,
 } from "@chakra-ui/react";
-
-export type UserAvatarInfo = {
-  name: string;
-  image?: string | null;
-  isOnline?: boolean;
-};
+import { type UserAvatarInfo } from "./types/user";
 
 export type UserAvatarProps = {
   user?: UserAvatarInfo | null;

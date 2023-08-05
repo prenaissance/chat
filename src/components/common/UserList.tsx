@@ -12,7 +12,7 @@ import UserAvatar from "../common/UserAvatar";
 import { AiOutlineSend } from "react-icons/ai";
 import FadingSkeletonStack from "../common/FadingSkeletonStack";
 import FriendSkeleton from "../friends/all-friends-panel/FriendSkeleton";
-import { type UserInfo } from "./UserCard";
+import { type UserInfo } from "./types/user";
 
 type Props = ChakraProps & {
   title: string;

@@ -12,15 +12,11 @@ import {
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 
-import UserAvatar, { type UserAvatarInfo } from "./UserAvatar";
-
-export type UserInfo = UserAvatarInfo & {
-  id: string;
-  description?: string | null;
-};
+import UserAvatar from "./UserAvatar";
+import { type UserInfoWithGroups } from "./types/user";
 
 type Props = {
-  user?: UserInfo | null;
+  user?: UserInfoWithGroups | null;
   isOnline?: boolean;
   showActions?: boolean;
 } & ChakraProps;
@@ -69,7 +65,10 @@ const UserCard = ({ user, isOnline, showActions = true, ...props }: Props) => {
             {user?.description ||
               "This user has not written a description yet."}
           </Text>
-          <Text fontWeight="bold">N groups in common</Text>
+          <Text fontWeight="bold">
+            {user?.groupsInCommon?.length} group
+            {user?.groupsInCommon?.length === 1 ? "" : "s"} in common
+          </Text>
         </Stack>
         {showActions && (
           <>

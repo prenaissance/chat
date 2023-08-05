@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { mapUserOnlineStatus } from "~/server/services/online-service";
+import { omit } from "~/utils/reflections";
 
 export const usersRouter = createTRPCRouter({
   getUser: protectedProcedure
@@ -13,11 +14,22 @@ export const usersRouter = createTRPCRouter({
     )
     .query(async ({ input, ctx }) => {
       const { id } = input;
-      const { prisma } = ctx;
+      const { prisma, session } = ctx;
 
       const user = await prisma.user.findUnique({
         where: {
           id,
+        },
+        include: {
+          groups: {
+            where: {
+              users: {
+                some: {
+                  id: session.user.id,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -28,6 +40,9 @@ export const usersRouter = createTRPCRouter({
         });
       }
 
-      return mapUserOnlineStatus(user);
+      return {
+        ...omit(mapUserOnlineStatus(user), ["groups"]),
+        groupsInCommon: user.groups,
+      };
     }),
 });
