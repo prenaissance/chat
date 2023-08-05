@@ -1,5 +1,4 @@
 import {
-  ButtonGroup,
   Editable,
   EditableInput,
   EditablePreview,
@@ -10,73 +9,16 @@ import {
   MenuItem,
   MenuList,
   Skeleton,
-  chakra,
   useColorModeValue,
-  useEditableContext,
-  useToast,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
-import { FaCheck, FaEllipsisV } from "react-icons/fa";
+import { FaEllipsisV } from "react-icons/fa";
 
 import UserAvatar from "~/components/common/UserAvatar";
 import { api } from "~/utils/api";
-
-const EditableControls = () => {
-  const router = useRouter();
-  const groupId = router.query.id as string | undefined;
-  const { isEditing, onSubmit, value, getSubmitButtonProps } =
-    useEditableContext();
-  const toast = useToast();
-  const queryClient = api.useContext();
-  const editNameMutation = api.groups.editGroupName.useMutation({
-    onSuccess: async () => {
-      onSubmit();
-      await Promise.all([
-        queryClient.groups.invalidate(),
-        queryClient.conversations.invalidate(),
-      ]);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error editing group name",
-        description:
-          error.data?.zodError?.formErrors.join(", ") ?? error.message,
-        status: "error",
-      });
-    },
-  });
-  const handleMutation = () => {
-    groupId &&
-      editNameMutation.mutate({
-        groupId: groupId,
-        name: value,
-      });
-  };
-
-  return (
-    isEditing && (
-      <ButtonGroup>
-        <IconButton
-          {...getSubmitButtonProps()}
-          size="sm"
-          onClick={handleMutation}
-          aria-label="Save group name"
-          isLoading={editNameMutation.isLoading}
-          icon={<FaCheck />}
-          colorScheme="green"
-        />
-        <IconButton
-          size="sm"
-          aria-label="Cancel editing group name"
-          icon={<chakra.span fontWeight="bold">X</chakra.span>}
-          colorScheme="red"
-          isDisabled={editNameMutation.isLoading}
-        />
-      </ButtonGroup>
-    )
-  );
-};
+import EditableControls from "./EditableControls";
+import LeaveGroupMenuItem from "./LeaveGroupMenuItem";
 
 const GroupChatHeader = () => {
   const router = useRouter();
@@ -120,7 +62,7 @@ const GroupChatHeader = () => {
           <MenuItem onClick={() => ref.current?.focus?.()}>
             Edit group name
           </MenuItem>
-          <MenuItem>Leave group</MenuItem>
+          <LeaveGroupMenuItem />
         </MenuList>
       </Menu>
     </HStack>

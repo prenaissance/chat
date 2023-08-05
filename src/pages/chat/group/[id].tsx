@@ -18,7 +18,7 @@ import { api } from "~/utils/api";
 import ChatMessages from "~/components/chat/chat-messages";
 import { useQueryCallbacks } from "~/hooks/useQueryCallbacks";
 import UserList from "~/components/common/UserList";
-import GroupChatHeader from "~/components/chat/group/GroupChatHeader";
+import GroupChatHeader from "~/components/chat/group/group-chat-header";
 
 const selector = ({
   setMessages,
@@ -93,10 +93,7 @@ const UserChat = () => {
     <ChatLayout>
       <Flex h="100%" w="100%">
         <Flex flexDirection="column" flexGrow={1}>
-          <GroupChatHeader
-            group={groupQuery.data}
-            isLoading={groupQuery.isLoading}
-          />
+          <GroupChatHeader />
           <Box h="calc(100% - 3rem)" px={2} py={4}>
             <ChatMessages h="calc(100% - 2rem)" overflowY="auto" />
             <chakra.form
