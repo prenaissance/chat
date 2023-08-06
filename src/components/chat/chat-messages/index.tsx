@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import { Box, Stack, type BoxProps } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 
@@ -8,6 +8,7 @@ import { MessageSource } from "@prisma/client";
 import SystemMessageGroupComponent, {
   type SystemMessageGroup,
 } from "./system-message-group";
+import { useRouter } from "next/router";
 
 const messagesSelector = (state: ChatStore) => state.messages;
 const isLoadingMessagesSelector = (state: ChatStore) => state.isLoadingMessages;
@@ -34,9 +35,40 @@ const messageGroupComponentMap = {
 type Props = BoxProps;
 
 export const ChatMessages = ({ ...props }: Props) => {
+  const router = useRouter();
+  const id = router.query.id as string | undefined;
   const messages = useChatStore(messagesSelector);
   const isLoadingMessages = useChatStore(isLoadingMessagesSelector);
   const session = useSession();
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const hasScrolledInitiallyRef = useRef(false);
+  const interceptionObserverRef = useRef<IntersectionObserver | null>(null);
+
+  useLayoutEffect(() => {
+    const handler = () => {
+      bottomRef.current?.scrollIntoView({
+        block: "end",
+      });
+    };
+    router.events.on("routeChangeComplete", handler);
+
+    return () => router.events.off("routeChangeComplete", handler);
+  }, [router.events]);
+
+  useLayoutEffect(() => {
+    const shouldScrollToBottom =
+      bottomRef.current &&
+      !isLoadingMessages &&
+      id &&
+      !hasScrolledInitiallyRef.current;
+
+    if (shouldScrollToBottom) {
+      bottomRef.current.scrollIntoView({
+        block: "end",
+      });
+      hasScrolledInitiallyRef.current = true;
+    }
+  }, [isLoadingMessages, id]);
 
   const messageGroups: MessageGroup[] = useMemo(() => {
     if (!messages.length) {
@@ -104,6 +136,7 @@ export const ChatMessages = ({ ...props }: Props) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return <Component key={index} {...(group.messageGroup as any)} />;
       })}
+      <Box ref={bottomRef} />
     </Stack>
   );
 };
