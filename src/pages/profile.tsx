@@ -7,6 +7,7 @@ import {
   Tabs,
   useColorModeValue,
 } from "@chakra-ui/react";
+import Head from "next/head";
 import type { ReactNode } from "react";
 import EditProfileTabPanel from "~/components/profile/edit-profile-tab-panel";
 import ProfileTabPanel from "~/components/profile/ProfileTabPanel";
@@ -34,38 +35,44 @@ const Profile = () => {
   const activeTab = useProfileTabsStore(activeTabsSelector);
   const setActiveTab = useProfileTabsStore(tabsSetterSelector);
   return (
-    <Tabs
-      isLazy
-      index={activeTab}
-      as={Flex}
-      orientation="vertical"
-      variant="line"
-      h="100%"
-      onChange={setActiveTab}
-    >
-      <TabList
-        overflow="auto"
-        minW="10rem"
-        bgColor={useColorModeValue("gray.100", "gray.900")}
-        borderRight="1px solid"
-        borderColor={useColorModeValue("gray.400", "gray.600")}
+    <>
+      <Head>
+        <title>Profile</title>
+        <meta name="description" content="Profile control panel" />
+      </Head>
+      <Tabs
+        isLazy
+        index={activeTab}
+        as={Flex}
+        orientation="vertical"
+        variant="line"
+        h="100%"
+        onChange={setActiveTab}
       >
-        <StyledTab>My Account</StyledTab>
-        <StyledTab>Edit Profile</StyledTab>
-        <Divider borderColor={useColorModeValue("gray.400", "gray.600")} />
-        <StyledTab>Security</StyledTab>
-      </TabList>
-      <TabPanels
-        flexGrow={1}
-        minH="100%"
-        display="flex"
-        flexDir="column"
-        alignItems="center"
-      >
-        <ProfileTabPanel />
-        <EditProfileTabPanel />
-      </TabPanels>
-    </Tabs>
+        <TabList
+          overflow="auto"
+          minW="10rem"
+          bgColor={useColorModeValue("gray.100", "gray.900")}
+          borderRight="1px solid"
+          borderColor={useColorModeValue("gray.400", "gray.600")}
+        >
+          <StyledTab>My Account</StyledTab>
+          <StyledTab>Edit Profile</StyledTab>
+          <Divider borderColor={useColorModeValue("gray.400", "gray.600")} />
+          <StyledTab>Security</StyledTab>
+        </TabList>
+        <TabPanels
+          flexGrow={1}
+          minH="100%"
+          display="flex"
+          flexDir="column"
+          alignItems="center"
+        >
+          <ProfileTabPanel />
+          <EditProfileTabPanel />
+        </TabPanels>
+      </Tabs>
+    </>
   );
 };
 

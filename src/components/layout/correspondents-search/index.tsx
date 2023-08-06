@@ -45,7 +45,7 @@ const CorrespondentsSearch = () => {
   );
 
   return (
-    <Box position="relative" aria-expanded={isOpen} ref={ref}>
+    <Box position="relative" ref={ref}>
       <InputGroup>
         <Input
           size="sm"
@@ -58,7 +58,13 @@ const CorrespondentsSearch = () => {
           <SearchIcon />
         </InputLeftElement>
       </InputGroup>
-      <Box position="absolute" top="100%" w="100%">
+      <Box
+        role="listbox"
+        position="absolute"
+        top="100%"
+        w="100%"
+        aria-expanded={isOpen}
+      >
         {isOpen && (
           <SearchResults
             zIndex="dropdown"
