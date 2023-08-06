@@ -1,8 +1,9 @@
 import { Box, Text, Flex, Stack, useColorModeValue } from "@chakra-ui/react";
 
-import { type OnlineStatusUser } from "~/shared/dtos/user";
 import UserAvatar from "~/components/common/UserAvatar";
 import MessageMeta from "./MessageMeta";
+import { type ChatMessage } from "../types";
+import { type UserInfo } from "~/components/common/types/user";
 
 const URL_ENCODED_CHAT_TAIL_LEFT =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMycgaGVpZ2h0PSczJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxwYXRoIGZpbGw9J2JsYWNrJyBkPSdtIDAgMyBMIDMgMyBMIDMgMCBDIDMgMSAxIDMgMCAzJy8+PC9zdmc+";
@@ -10,17 +11,13 @@ const URL_ENCODED_CHAT_TAIL_LEFT =
 const URL_ENCODED_CHAT_TAIL_RIGHT =
   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMycgaGVpZ2h0PSczJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxwYXRoIGZpbGw9J2JsYWNrJyBkPSdtIDAgMyBMIDEgMyBMIDMgMyBDIDIgMyAwIDEgMCAwJy8+PC9zdmc+";
 
-export type MessageGroup = {
-  messages: {
-    content: string;
-    createdAt: Date;
-    isSent: boolean;
-  }[];
-  user: Pick<OnlineStatusUser, "id" | "name" | "image" | "isOnline">;
+export type UserMessageGroup = {
+  messages: ChatMessage[];
+  user: UserInfo;
   isSelf: boolean;
 };
 
-const ChatMessageGroup = ({ messages, user, isSelf }: MessageGroup) => {
+const ChatMessageGroup = ({ messages, user, isSelf }: UserMessageGroup) => {
   const selfColor = useColorModeValue("blue.200", "blue.800");
   const otherColor = useColorModeValue("gray.300", "gray.700");
 
