@@ -4,6 +4,13 @@
  */
 await import("./src/env.mjs");
 
+const CSP = `
+  default-src * 'unsafe-inline' 'unsafe-eval';
+  script-src 'self' 'unsafe-inline' 'unsafe-eval';
+  style-src 'self' 'unsafe-inline';
+  img-src * data:;
+`
+
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
@@ -19,6 +26,23 @@ const config = {
   i18n: {
     locales: ["en"],
     defaultLocale: "en",
+  },
+  headers: async () => {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: CSP.replace(/\s{2,}/g, "").trim(),
+          }
+        ]
+      },
+    ];
   },
 };
 
