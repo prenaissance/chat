@@ -24,6 +24,7 @@ export const env = createEnv({
     // Add `.min(1) on ID and SECRET if you want to make sure they're not empty
     DISCORD_CLIENT_ID: z.string(),
     DISCORD_CLIENT_SECRET: z.string(),
+    WS_PATH: z.string().default("/api/ws"),
     WS_PORT: z
       .string()
       .regex(/^\d{1,6}$/, "Must be a valid port number")
@@ -53,6 +54,7 @@ export const env = createEnv({
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     WS_PORT: process.env.WS_PORT,
+    WS_PATH: process.env.WS_PATH,
     NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
     AZURE_STORAGE_CONNECTION_STRING: process.env.AZURE_STORAGE_CONNECTION_STRING,
   },

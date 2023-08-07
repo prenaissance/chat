@@ -111,6 +111,7 @@ const EditProfileTabPanel = () => {
                   ? undefined
                   : {
                       id: profileQuery.data?.id ?? "",
+                      groupsInCommon: [],
                       ...editUser,
                     }
               }

@@ -14,6 +14,7 @@ subscriberRedis.on("message", (channel, _message) => {
 
 const wss = new ws.Server({
   port: env.WS_PORT,
+  path: env.WS_PATH,
 });
 
 const handler = applyWSSHandler<AppRouter>({
