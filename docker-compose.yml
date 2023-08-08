@@ -14,6 +14,9 @@ services:
       - ./nginx/certs:/etc/nginx/certs
     ports:
       - 127.0.0.1:5000:443
+    environment:
+      - WEB_SERVER_URL=http://host.docker.internal:3000
+      - WS_SERVER_URL=http://host.docker.internal:3001
   postgres:
     image: postgres:latest
     container_name: postgres
