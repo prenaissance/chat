@@ -7,12 +7,14 @@ import { api } from "~/utils/api";
 import { useInterval } from "~/hooks/useInterval";
 import { useNotificationsStore } from "~/stores/notifications";
 import AcceptNotificationsAlert from "./AcceptNotificationsAlert";
+import { useNotifications } from "~/hooks/useNotifications";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const session = useSession();
   const wasUserAsked = useNotificationsStore((state) => state.wasUsedAsked);
   const onlineHeartbeatMutation = api.online.heartbeat.useMutation();
   const [showNotificationRequest, setShowNotificationRequest] = useState(false);
+  useNotifications();
   useInterval(onlineHeartbeatMutation.mutate, {
     delay: 1000 * 60,
     isImmediate: true,
