@@ -5,6 +5,7 @@ import { FriendStatus } from "~/shared/dtos/friends";
 import { getFriendStatus } from "../../services/friend-status-service";
 import { mapUserOnlineStatus } from "../../services/online-service";
 import { omit } from "~/utils/reflections";
+import { publishFriendRequest } from "~/server/services/notifications";
 
 export const friendsRouter = createTRPCRouter({
   getFriends: protectedProcedure.query(async ({ ctx }) => {
@@ -119,7 +120,7 @@ export const friendsRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { targetUserId } = input;
-      const { session, prisma } = ctx;
+      const { session, prisma, redis } = ctx;
       const friendStatus = await getFriendStatus(
         prisma,
         session.user.id,
@@ -158,21 +159,32 @@ export const friendsRouter = createTRPCRouter({
             accepted: true,
           },
         });
-        await prisma.friendRequest.create({
+        const friendRequest = await prisma.friendRequest.create({
           data: {
             fromId: session.user.id,
             toId: targetUserId,
             accepted: true,
           },
+          include: {
+            from: true,
+            to: true,
+          },
         });
+        publishFriendRequest(redis, friendRequest);
       }
 
-      await prisma.friendRequest.create({
+      const friendRequest = await prisma.friendRequest.create({
         data: {
           fromId: session.user.id,
           toId: targetUserId,
         },
+        include: {
+          from: true,
+          to: true,
+        },
       });
+
+      publishFriendRequest(redis, friendRequest);
     }),
 
   cancelFriendRequest: protectedProcedure
@@ -249,7 +261,7 @@ export const friendsRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { targetUserId } = input;
-      const { session, prisma } = ctx;
+      const { session, prisma, redis } = ctx;
 
       const friendStatus = await getFriendStatus(
         prisma,
@@ -271,13 +283,19 @@ export const friendsRouter = createTRPCRouter({
           accepted: false,
         },
       });
-      await prisma.friendRequest.create({
+
+      const newFriendRequest = await prisma.friendRequest.create({
         data: {
           fromId: session.user.id,
           toId: targetUserId,
           accepted: true,
         },
+        include: {
+          from: true,
+          to: true,
+        },
       });
+      publishFriendRequest(redis, newFriendRequest);
 
       return await prisma.friendRequest.update({
         where: {
