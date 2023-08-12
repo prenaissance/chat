@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowForwardIcon, InfoIcon } from "@chakra-ui/icons";
 import {
   Box,
@@ -80,13 +80,13 @@ const UserChat = () => {
     setTypedMessage("");
   };
 
-  // might be bad pattern, but this branch is not subscribed to conversations
-  useEffect(() => readUserConversation(userId), [userId, readUserConversation]);
-
   useQueryCallbacks({
     query: messagesQuery,
     onSuccess: () => setIsLoadingMessages(false),
-    onDataChanged: setMessages,
+    onDataChanged: (messages) => {
+      setMessages(messages);
+      readUserConversation(userId);
+    },
   });
 
   return (
@@ -158,7 +158,12 @@ const UserChat = () => {
               borderLeft="1px solid"
               borderColor={useColorModeValue("gray.400", "gray.600")}
             >
-              <UserCard m={2} user={userQuery.data} showActions={false} />
+              <UserCard
+                w="100%"
+                m={2}
+                user={userQuery.data}
+                showActions={false}
+              />
             </chakra.aside>
           </Show>
         </Flex>

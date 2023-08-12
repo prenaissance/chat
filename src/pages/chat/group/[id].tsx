@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
 import {
   Box,
@@ -26,20 +26,20 @@ const selector = ({
   addMessage,
   setIsLoadingMessages,
   rollbackMessage,
-  readUserConversation,
+  readGroupConversation,
 }: ChatStore) => ({
   setMessages,
   addMessage,
   setIsLoadingMessages,
   rollbackMessage,
-  readUserConversation,
+  readGroupConversation,
 });
 
 const UserChat = () => {
   const {
     setMessages,
     addMessage,
-    readUserConversation,
+    readGroupConversation,
     setIsLoadingMessages,
   } = useChatStore(selector, shallow);
   const router = useRouter();
@@ -78,16 +78,13 @@ const UserChat = () => {
     setTypedMessage("");
   };
 
-  // might be bad pattern, but this branch is not subscribed to conversations
-  useEffect(
-    () => readUserConversation(groupId),
-    [groupId, readUserConversation]
-  );
-
   useQueryCallbacks({
     query: messagesQuery,
     onSuccess: () => setIsLoadingMessages(false),
-    onDataChanged: setMessages,
+    onDataChanged: (messages) => {
+      setMessages(messages);
+      readGroupConversation(groupId);
+    },
   });
 
   return (

@@ -4,14 +4,15 @@ import { useRouter } from "next/router";
 
 import ChatSideBar from "./chat-sidebar";
 import { api } from "~/utils/api";
-import { type ChatStore, useChatStore } from "~/stores/chat";
-
-const addMessageSelector = (state: ChatStore) => state.addMessage;
+import { useChatStore } from "~/stores/chat";
 
 const ChatLayout = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const targetId = router.query.id as string | undefined;
-  const addMessage = useChatStore(addMessageSelector);
+  const addMessage = useChatStore((state) => state.addMessage);
+  const addMessageToConversation = useChatStore(
+    (state) => state.addMessageToConversation
+  );
 
   api.chat.onMessage.useSubscription(undefined, {
     onData: (message) => {
@@ -23,6 +24,8 @@ const ChatLayout = ({ children }: { children: ReactNode }) => {
           message,
           isFromSelf: false,
         });
+      } else {
+        addMessageToConversation(message);
       }
     },
   });

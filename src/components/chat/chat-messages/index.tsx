@@ -1,17 +1,14 @@
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Box, Stack, type BoxProps } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
-
-import { type ChatStore, useChatStore } from "~/stores/chat";
-import ChatMessageGroup, { type UserMessageGroup } from "./chat-message-group";
 import { MessageSource } from "@prisma/client";
+import { useRouter } from "next/router";
+
+import { useChatStore } from "~/stores/chat";
+import ChatMessageGroup, { type UserMessageGroup } from "./chat-message-group";
 import SystemMessageGroupComponent, {
   type SystemMessageGroup,
 } from "./system-message-group";
-import { useRouter } from "next/router";
-
-const messagesSelector = (state: ChatStore) => state.messages;
-const isLoadingMessagesSelector = (state: ChatStore) => state.isLoadingMessages;
 
 const ChatMessagesSkeleton = (props: BoxProps) => (
   <Box {...props}>Placeholder</Box>
@@ -37,14 +34,14 @@ type Props = BoxProps;
 export const ChatMessages = ({ ...props }: Props) => {
   const router = useRouter();
   const id = router.query.id as string | undefined;
-  const messages = useChatStore(messagesSelector);
-  const isLoadingMessages = useChatStore(isLoadingMessagesSelector);
+  const messages = useChatStore((state) => state.messages);
+  const isLoadingMessages = useChatStore((state) => state.isLoadingMessages);
   const session = useSession();
   const bottomRef = useRef<HTMLDivElement>(null);
   const hasScrolledInitiallyRef = useRef(false);
   const interceptionObserverRef = useRef<IntersectionObserver | null>(null);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const handler = () => {
       bottomRef.current?.scrollIntoView({
         block: "end",
@@ -53,7 +50,7 @@ export const ChatMessages = ({ ...props }: Props) => {
     router.events.on("routeChangeComplete", handler);
 
     return () => router.events.off("routeChangeComplete", handler);
-  }, [router.events]);
+  }, [router.events, id]);
 
   useLayoutEffect(() => {
     const shouldScrollToBottom =
