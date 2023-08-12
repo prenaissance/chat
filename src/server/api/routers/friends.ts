@@ -360,6 +360,7 @@ export const friendsRouter = createTRPCRouter({
           return;
         }
         const friendRequest = SuperJSON.parse<FriendRequestDto>(message);
+        console.log(friendRequest);
         if (friendRequest.toId !== userId) {
           return;
         }

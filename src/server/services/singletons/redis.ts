@@ -16,6 +16,8 @@ export const redis = globalForRedis.redis ?? new Redis(env.REDIS_URL);
 const subscriberRedis =
   globalForRedis.subscriberRedis ?? new Redis(env.REDIS_URL);
 void subscriberRedis.subscribe(RedisChannel.ChatMessages);
+void subscriberRedis.subscribe(RedisChannel.FriendRequests);
+
 export { subscriberRedis };
 if (env.NODE_ENV !== "production") {
   globalForRedis.redis = redis;
