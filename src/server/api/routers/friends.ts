@@ -1,11 +1,15 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { FriendStatus } from "~/shared/dtos/friends";
-import { getFriendStatus } from "../../services/friend-status-service";
-import { mapUserOnlineStatus } from "../../services/online-service";
+import SuperJSON from "superjson";
+import { observable } from "@trpc/server/observable";
+
+import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { type FriendRequestDto, FriendStatus } from "~/shared/dtos/friends";
 import { omit } from "~/utils/reflections";
+import { getFriendStatus } from "~/server/services/friend-status-service";
+import { mapUserOnlineStatus } from "~/server/services/online-service";
 import { publishFriendRequest } from "~/server/services/notifications";
+import { RedisChannel } from "~/server/services/singletons/redis";
 
 export const friendsRouter = createTRPCRouter({
   getFriends: protectedProcedure.query(async ({ ctx }) => {
@@ -345,4 +349,27 @@ export const friendsRouter = createTRPCRouter({
         },
       });
     }),
+
+  onFriendUpdate: protectedProcedure.subscription(({ ctx }) => {
+    const { session, subscriberRedis } = ctx;
+    const userId = session.user.id;
+
+    return observable<FriendRequestDto>((emitter) => {
+      const handler = (channel: string, message: string) => {
+        if (channel !== RedisChannel.FriendRequests.toString()) {
+          return;
+        }
+        const friendRequest = SuperJSON.parse<FriendRequestDto>(message);
+        if (friendRequest.toId !== userId) {
+          return;
+        }
+
+        emitter.next(friendRequest);
+      };
+
+      subscriberRedis.on("message", handler);
+
+      return () => void subscriberRedis.off("message", handler);
+    });
+  }),
 });

@@ -1,11 +1,12 @@
-import { type FriendRequest, type User } from "@prisma/client";
 import { type Redis } from "ioredis";
 import SuperJSON from "superjson";
+
 import { RedisChannel } from "./singletons/redis";
+import { type FriendRequestDto } from "~/shared/dtos/friends";
 
 export const publishFriendRequest = (
   redis: Redis,
-  friendRequest: FriendRequest & { from: User; to: User }
+  friendRequest: FriendRequestDto
 ) => {
   const json = SuperJSON.stringify(friendRequest);
   void redis.publish(RedisChannel.FriendRequests, json);
