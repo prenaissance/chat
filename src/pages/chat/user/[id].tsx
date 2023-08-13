@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { ArrowForwardIcon, InfoIcon } from "@chakra-ui/icons";
+import { InfoIcon } from "@chakra-ui/icons";
 import {
   Box,
   Flex,
@@ -9,9 +8,10 @@ import {
   HStack,
   Skeleton,
   IconButton,
-  Input,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
+import Head from "next/head";
+import { useSession } from "next-auth/react";
 import { shallow } from "zustand/shallow";
 
 import ChatLayout from "~/components/chat/ChatLayout";
@@ -21,8 +21,7 @@ import { api } from "~/utils/api";
 import ChatMessages from "~/components/chat/chat-messages";
 import UserCard from "~/components/common/UserCard";
 import { useQueryCallbacks } from "~/hooks/useQueryCallbacks";
-import Head from "next/head";
-import { useSession } from "next-auth/react";
+import MessageInput from "~/components/chat/MessageInput";
 
 const selector = ({
   setMessages,
@@ -57,8 +56,6 @@ const UserChat = () => {
     }
   );
 
-  const [typedMessage, setTypedMessage] = useState("");
-
   const messagesQuery = api.chat.getUserMessages.useQuery(
     {
       targetUserId: userId,
@@ -76,16 +73,11 @@ const UserChat = () => {
       }),
   });
 
-  const handleTypedMessageChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setTypedMessage(e.target.value);
-  const handleSendMessage = () => {
-    sendMessageMutation.mutate({
-      message: typedMessage,
+  const handleSendMessage = (message: string) =>
+    sendMessageMutation.mutateAsync({
+      message,
       targetUserId: userId,
     });
-
-    setTypedMessage("");
-  };
 
   useQueryCallbacks({
     query: messagesQuery,
@@ -129,31 +121,10 @@ const UserChat = () => {
             </HStack>
             <Box h="calc(100% - 3rem)" px={2} py={4}>
               <ChatMessages h="calc(100% - 2rem)" overflowY="auto" />
-              <chakra.form
-                h={8}
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSendMessage();
-                }}
-                display="flex"
-                mb={2}
-                gap={1}
-              >
-                <Input
-                  placeholder="Type a new message"
-                  value={typedMessage}
-                  onChange={handleTypedMessageChange}
-                  flexGrow={1}
-                  variant="filled"
-                />
-                <IconButton
-                  variant="ghost"
-                  type="submit"
-                  aria-label="Send message"
-                  icon={<ArrowForwardIcon />}
-                  disabled={!typedMessage}
-                />
-              </chakra.form>
+              <MessageInput
+                onSendMessage={handleSendMessage}
+                isLoading={sendMessageMutation.isLoading}
+              />
             </Box>
           </Flex>
           <Show above="xl">
