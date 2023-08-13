@@ -1,4 +1,10 @@
-import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { Box, Stack, type BoxProps } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { MessageSource } from "@prisma/client";
@@ -37,20 +43,59 @@ export const ChatMessages = ({ ...props }: Props) => {
   const messages = useChatStore((state) => state.messages);
   const isLoadingMessages = useChatStore((state) => state.isLoadingMessages);
   const session = useSession();
+  const stackRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const hasScrolledInitiallyRef = useRef(false);
   const interceptionObserverRef = useRef<IntersectionObserver | null>(null);
 
-  useEffect(() => {
-    const handler = () => {
-      bottomRef.current?.scrollIntoView({
-        block: "end",
-      });
-    };
-    router.events.on("routeChangeComplete", handler);
+  const scrollToBottom = useCallback(() => {
+    bottomRef.current?.scrollIntoView({
+      block: "start",
+    });
+  }, []);
 
-    return () => router.events.off("routeChangeComplete", handler);
-  }, [router.events, id]);
+  const shouldScrollOnIncomingMessage = useCallback(() => {
+    // check if the if the previous last message is visible
+    const messageElements = stackRef.current?.children;
+    if (!messageElements || messageElements.length < 3) {
+      return false;
+    }
+    const secondLastMessageElement =
+      messageElements[messageElements.length - 3]!;
+
+    // calculate if the second last element is visible inside the stack
+    const stackRect = stackRef.current.getBoundingClientRect();
+    const secondLastMessageRect =
+      secondLastMessageElement.getBoundingClientRect();
+    const isSecondLastMessageVisible =
+      secondLastMessageRect.top >= stackRect.top &&
+      secondLastMessageRect.bottom <= stackRect.bottom;
+
+    return isSecondLastMessageVisible;
+  }, []);
+
+  useEffect(() => {
+    router.events.on("routeChangeComplete", scrollToBottom);
+
+    return () => router.events.off("routeChangeComplete", scrollToBottom);
+  }, [router.events, id, scrollToBottom]);
+
+  useEffect(() => {
+    const lastMessageSenderId = messages.at(-1)?.fromId;
+    const shouldScrollToBottom =
+      (hasScrolledInitiallyRef.current &&
+        lastMessageSenderId === session.data?.user?.id) ||
+      shouldScrollOnIncomingMessage();
+
+    if (shouldScrollToBottom) {
+      scrollToBottom();
+    }
+  }, [
+    messages,
+    session.data?.user?.id,
+    scrollToBottom,
+    shouldScrollOnIncomingMessage,
+  ]);
 
   useLayoutEffect(() => {
     const shouldScrollToBottom =
@@ -60,12 +105,10 @@ export const ChatMessages = ({ ...props }: Props) => {
       !hasScrolledInitiallyRef.current;
 
     if (shouldScrollToBottom) {
-      bottomRef.current.scrollIntoView({
-        block: "end",
-      });
+      scrollToBottom();
       hasScrolledInitiallyRef.current = true;
     }
-  }, [isLoadingMessages, id]);
+  }, [isLoadingMessages, id, scrollToBottom]);
 
   const messageGroups: MessageGroup[] = useMemo(() => {
     if (!messages.length) {
@@ -126,7 +169,7 @@ export const ChatMessages = ({ ...props }: Props) => {
     return <ChatMessagesSkeleton {...props} />;
   }
   return (
-    <Stack {...props} gap={2}>
+    <Stack {...props} gap={2} ref={stackRef}>
       {messageGroups.map((group, index) => {
         const Component = messageGroupComponentMap[group.type];
 
