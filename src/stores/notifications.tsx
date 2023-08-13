@@ -24,7 +24,7 @@ export const useNotificationsStore = create<NotificationsStore>()(
       wasUsedAsked: false,
       enabledPreferences: {
         messages: true,
-        friendRequests: true,
+        friendRequests: false,
       },
       setUserAsked: () => {
         set({ wasUsedAsked: true });

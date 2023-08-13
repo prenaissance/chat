@@ -3,12 +3,20 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 
 import { api } from "~/utils/api";
+import { useNotificationsStore } from "~/stores/notifications";
 
 export const useNotifications = () => {
   const session = useSession();
   const router = useRouter();
+  // persist middleware does not affect SSR because this is used for side effects only
+  const enabledPreferences = useNotificationsStore(
+    (state) => state.enabledPreferences
+  );
   api.chat.onMessage.useSubscription(undefined, {
-    enabled: !!session.data && Notification.permission === "granted",
+    enabled:
+      !!session.data &&
+      Notification.permission === "granted" &&
+      enabledPreferences.messages,
     onData: (message) => {
       switch (message.targetType) {
         case MessageTarget.User: {
@@ -36,7 +44,10 @@ export const useNotifications = () => {
   });
 
   api.friends.onFriendUpdate.useSubscription(undefined, {
-    enabled: !!session.data && Notification.permission === "granted",
+    enabled:
+      !!session.data &&
+      Notification.permission === "granted" &&
+      enabledPreferences.friendRequests,
     onData: (friendRequest) => {
       if (friendRequest.accepted) {
         const notification = new Notification(

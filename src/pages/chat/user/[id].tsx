@@ -22,6 +22,7 @@ import ChatMessages from "~/components/chat/chat-messages";
 import UserCard from "~/components/common/UserCard";
 import { useQueryCallbacks } from "~/hooks/useQueryCallbacks";
 import Head from "next/head";
+import { useSession } from "next-auth/react";
 
 const selector = ({
   setMessages,
@@ -45,10 +46,16 @@ const UserChat = () => {
     addMessage,
   } = useChatStore(selector, shallow);
   const router = useRouter();
+  const session = useSession();
   const userId = router.query.id as string;
-  const userQuery = api.users.getUser.useQuery({
-    id: userId,
-  });
+  const userQuery = api.users.getUser.useQuery(
+    {
+      id: userId,
+    },
+    {
+      enabled: !!userId && !!session.data,
+    }
+  );
 
   const [typedMessage, setTypedMessage] = useState("");
 
@@ -57,7 +64,7 @@ const UserChat = () => {
       targetUserId: userId,
     },
     {
-      enabled: !!userId,
+      enabled: !!userId && !!session.data,
     }
   );
 
