@@ -10,6 +10,7 @@ import {
 import Head from "next/head";
 import type { ReactNode } from "react";
 import EditProfileTabPanel from "~/components/profile/edit-profile-tab-panel";
+import NotificationsTabPanel from "~/components/profile/NotificationsTabPanel";
 import ProfileTabPanel from "~/components/profile/ProfileTabPanel";
 import {
   type ProfileTabsStore,
@@ -59,6 +60,8 @@ const Profile = () => {
           <StyledTab>My Account</StyledTab>
           <StyledTab>Edit Profile</StyledTab>
           <Divider borderColor={useColorModeValue("gray.400", "gray.600")} />
+          <StyledTab>Notifications</StyledTab>
+          <Divider borderColor={useColorModeValue("gray.400", "gray.600")} />
           <StyledTab>Security</StyledTab>
         </TabList>
         <TabPanels
@@ -70,6 +73,7 @@ const Profile = () => {
         >
           <ProfileTabPanel />
           <EditProfileTabPanel />
+          <NotificationsTabPanel />
         </TabPanels>
       </Tabs>
     </>
