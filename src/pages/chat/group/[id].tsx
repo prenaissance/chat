@@ -1,43 +1,25 @@
 import { Box, Flex, Show, useColorModeValue } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { shallow } from "zustand/shallow";
 
 import ChatLayout from "~/components/chat/ChatLayout";
-import { type ChatStore, useChatStore } from "~/stores/chat";
 import { api } from "~/utils/api";
 import ChatMessages from "~/components/chat/chat-messages";
 import { useQueryCallbacks } from "~/hooks/useQueryCallbacks";
 import UserList from "~/components/common/UserList";
 import GroupChatHeader from "~/components/chat/group/group-chat-header";
 import MessageInput from "~/components/chat/MessageInput";
-
-const selector = ({
-  setMessages,
-  addMessage,
-  setIsLoadingMessages,
-  rollbackMessage,
-  readGroupConversation,
-}: ChatStore) => ({
-  setMessages,
-  addMessage,
-  setIsLoadingMessages,
-  rollbackMessage,
-  readGroupConversation,
-});
+import { useGroupOptimisticUpdates } from "~/hooks/chat/useGroupOptimisticUpdates";
+import { useConversationOptimisticUpdates } from "~/hooks/conversations/useConversationOptimisticUpdates";
 
 const UserChat = () => {
-  const {
-    setMessages,
-    addMessage,
-    readGroupConversation,
-    setIsLoadingMessages,
-  } = useChatStore(selector, shallow);
   const router = useRouter();
   const groupId = router.query.id as string;
   const groupQuery = api.groups.getGroup.useQuery(groupId, {
     enabled: !!groupId,
   });
+  const { addMessage } = useGroupOptimisticUpdates(groupId);
+  const { readConversation } = useConversationOptimisticUpdates();
 
   const messagesQuery = api.groups.getMessages.useQuery(
     {
@@ -47,27 +29,22 @@ const UserChat = () => {
       enabled: !!groupId,
     }
   );
+  const messages = messagesQuery.data ?? [];
 
-  const sendMessageMutation = api.groups.sendMessage.useMutation({
-    onSuccess: (message) =>
-      addMessage({
-        message,
-        isFromSelf: true,
-      }),
-  });
+  const sendMessageMutation = api.groups.sendMessage.useMutation();
 
-  const handleSendMessage = (message: string) =>
-    sendMessageMutation.mutateAsync({
+  const handleSendMessage = (message: string) => {
+    addMessage(message);
+    sendMessageMutation.mutate({
       message,
       targetGroupId: groupId,
     });
+  };
 
   useQueryCallbacks({
     query: messagesQuery,
-    onSuccess: () => setIsLoadingMessages(false),
-    onDataChanged: (messages) => {
-      setMessages(messages);
-      readGroupConversation(groupId);
+    onDataChanged: () => {
+      readConversation(groupId);
     },
   });
 
@@ -82,11 +59,13 @@ const UserChat = () => {
           <Flex flexDirection="column" flexGrow={1}>
             <GroupChatHeader />
             <Box h="calc(100% - 3rem)" px={2} py={4}>
-              <ChatMessages h="calc(100% - 2rem)" overflowY="auto" />
-              <MessageInput
-                onSendMessage={handleSendMessage}
-                isLoading={sendMessageMutation.isLoading}
+              <ChatMessages
+                messages={messages}
+                isLoading={messagesQuery.isLoading}
+                h="calc(100% - 2rem)"
+                overflowY="auto"
               />
+              <MessageInput onSendMessage={handleSendMessage} />
             </Box>
           </Flex>
           <Show above="xl">

@@ -11,8 +11,6 @@ import {
 import CreateGroupButton from "./CreateGroupButton";
 import Conversation from "./Conversation";
 import { api } from "~/utils/api";
-import { useChatStore } from "~/stores/chat";
-import { useQueryCallbacks } from "~/hooks/useQueryCallbacks";
 
 const StyledStack = ({ children, ...props }: StackProps) => (
   <Stack
@@ -34,12 +32,7 @@ const StyledStack = ({ children, ...props }: StackProps) => (
 
 const ChatSideBar = () => {
   const conversationsQuery = api.conversations.getConversations.useQuery();
-  const conversations = useChatStore((state) => state.conversations);
-  const setConversations = useChatStore((state) => state.setConversations);
-  useQueryCallbacks({
-    query: conversationsQuery,
-    onDataChanged: setConversations,
-  });
+  const conversations = conversationsQuery.data ?? [];
 
   if (conversationsQuery.isLoading) {
     return (

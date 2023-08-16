@@ -12,41 +12,23 @@ import {
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { useSession } from "next-auth/react";
-import { shallow } from "zustand/shallow";
 
 import ChatLayout from "~/components/chat/ChatLayout";
 import UserAvatar from "~/components/common/UserAvatar";
-import { type ChatStore, useChatStore } from "~/stores/chat";
 import { api } from "~/utils/api";
 import ChatMessages from "~/components/chat/chat-messages";
 import UserCard from "~/components/common/UserCard";
 import { useQueryCallbacks } from "~/hooks/useQueryCallbacks";
 import MessageInput from "~/components/chat/MessageInput";
-
-const selector = ({
-  setMessages,
-  addMessage,
-  setIsLoadingMessages,
-  rollbackMessage,
-  readUserConversation,
-}: ChatStore) => ({
-  setMessages,
-  addMessage,
-  setIsLoadingMessages,
-  rollbackMessage,
-  readUserConversation,
-});
+import { useUserOptimisticUpdates } from "~/hooks/chat/useUserOptimisticUpdates";
+import { useConversationOptimisticUpdates } from "~/hooks/conversations/useConversationOptimisticUpdates";
 
 const UserChat = () => {
-  const {
-    setMessages,
-    readUserConversation,
-    setIsLoadingMessages,
-    addMessage,
-  } = useChatStore(selector, shallow);
   const router = useRouter();
   const session = useSession();
   const userId = router.query.id as string;
+  const { addMessage } = useUserOptimisticUpdates(userId);
+  const { readConversation } = useConversationOptimisticUpdates();
   const userQuery = api.users.getUser.useQuery(
     {
       id: userId,
@@ -64,28 +46,21 @@ const UserChat = () => {
       enabled: !!userId && !!session.data,
     }
   );
+  const messages = messagesQuery.data ?? [];
 
-  const sendMessageMutation = api.chat.sendUserMessage.useMutation({
-    onSuccess: (message) =>
-      addMessage({
-        message,
-        isFromSelf: true,
-      }),
-  });
+  const sendMessageMutation = api.chat.sendUserMessage.useMutation();
 
-  const handleSendMessage = (message: string) =>
-    sendMessageMutation.mutateAsync({
+  const handleSendMessage = (message: string) => {
+    addMessage(message);
+    sendMessageMutation.mutate({
       message,
       targetUserId: userId,
     });
+  };
 
   useQueryCallbacks({
     query: messagesQuery,
-    onSuccess: () => setIsLoadingMessages(false),
-    onDataChanged: (messages) => {
-      setMessages(messages);
-      readUserConversation(userId);
-    },
+    onDataChanged: () => readConversation(userId),
   });
 
   return (
@@ -120,11 +95,13 @@ const UserChat = () => {
               />
             </HStack>
             <Box h="calc(100% - 3rem)" px={2} py={4}>
-              <ChatMessages h="calc(100% - 2rem)" overflowY="auto" />
-              <MessageInput
-                onSendMessage={handleSendMessage}
-                isLoading={sendMessageMutation.isLoading}
+              <ChatMessages
+                messages={messages}
+                isLoading={messagesQuery.isLoading}
+                h="calc(100% - 2rem)"
+                overflowY="auto"
               />
+              <MessageInput onSendMessage={handleSendMessage} />
             </Box>
           </Flex>
           <Show above="xl">

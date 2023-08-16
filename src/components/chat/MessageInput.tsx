@@ -7,12 +7,16 @@ import {
   useState,
 } from "react";
 
-type Props = {
-  onSendMessage: (message: string) => Promise<unknown>;
-  isLoading: boolean;
+type Props<T> = {
+  onSendMessage: (message: string) => Promise<T> | T;
+  isLoading?: boolean;
 } & ChakraProps;
 
-const MessageInput = ({ onSendMessage, isLoading, ...props }: Props) => {
+const MessageInput = <T,>({
+  onSendMessage,
+  isLoading = false,
+  ...props
+}: Props<T>) => {
   const [typedMessage, setTypedMessage] = useState("");
 
   const handleTypedMessageChange = useCallback(
@@ -21,7 +25,9 @@ const MessageInput = ({ onSendMessage, isLoading, ...props }: Props) => {
   );
   const handleSubmit: FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
-    void onSendMessage(typedMessage).then(() => setTypedMessage(""));
+    void Promise.resolve(onSendMessage(typedMessage)).then(() =>
+      setTypedMessage("")
+    );
   };
 
   return (

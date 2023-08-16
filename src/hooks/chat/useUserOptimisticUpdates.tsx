@@ -6,7 +6,7 @@ import { type MessageDTO } from "~/shared/dtos/chat";
 import { api } from "~/utils/api";
 import { cuid } from "~/utils/cryptography";
 
-export const useGroupOptimisticUpdates = (targetUserId?: string) => {
+export const useUserOptimisticUpdates = (targetUserId?: string) => {
   const session = useSession();
   const { data: selfUser } = api.profile.getProfile.useQuery(undefined, {
     enabled: !!session.data,

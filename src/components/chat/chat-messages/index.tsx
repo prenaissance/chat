@@ -10,11 +10,11 @@ import { useSession } from "next-auth/react";
 import { MessageSource } from "@prisma/client";
 import { useRouter } from "next/router";
 
-import { useChatStore } from "~/stores/chat";
 import ChatMessageGroup, { type UserMessageGroup } from "./chat-message-group";
 import SystemMessageGroupComponent, {
   type SystemMessageGroup,
 } from "./system-message-group";
+import { type MessageDTO } from "~/shared/dtos/chat";
 
 const ChatMessagesSkeleton = (props: BoxProps) => (
   <Box {...props}>Placeholder</Box>
@@ -35,13 +35,11 @@ const messageGroupComponentMap = {
   [MessageSource.System]: SystemMessageGroupComponent,
 };
 
-type Props = BoxProps;
+type Props = { messages: MessageDTO[]; isLoading: boolean } & BoxProps;
 
-export const ChatMessages = ({ ...props }: Props) => {
+export const ChatMessages = ({ messages, isLoading, ...props }: Props) => {
   const router = useRouter();
   const id = router.query.id as string | undefined;
-  const messages = useChatStore((state) => state.messages);
-  const isLoadingMessages = useChatStore((state) => state.isLoadingMessages);
   const session = useSession();
   const stackRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -99,16 +97,13 @@ export const ChatMessages = ({ ...props }: Props) => {
 
   useLayoutEffect(() => {
     const shouldScrollToBottom =
-      bottomRef.current &&
-      !isLoadingMessages &&
-      id &&
-      !hasScrolledInitiallyRef.current;
+      bottomRef.current && !isLoading && id && !hasScrolledInitiallyRef.current;
 
     if (shouldScrollToBottom) {
       scrollToBottom();
       hasScrolledInitiallyRef.current = true;
     }
-  }, [isLoadingMessages, id, scrollToBottom]);
+  }, [isLoading, id, scrollToBottom]);
 
   const messageGroups: MessageGroup[] = useMemo(() => {
     if (!messages.length) {
@@ -164,8 +159,7 @@ export const ChatMessages = ({ ...props }: Props) => {
     }, [] as MessageGroup[]);
   }, [messages, session.data?.user?.id]);
 
-  const isLoading = isLoadingMessages || session.status === "loading";
-  if (isLoading) {
+  if (isLoading || session.status === "loading") {
     return <ChatMessagesSkeleton {...props} />;
   }
   return (

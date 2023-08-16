@@ -1,33 +1,59 @@
-import { type ReactNode } from "react";
+import { useCallback, type ReactNode } from "react";
 import { Box, Flex } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
 import ChatSideBar from "./chat-sidebar";
 import { api } from "~/utils/api";
-import { useChatStore } from "~/stores/chat";
+import { type MessageDTO } from "~/shared/dtos/chat";
+import { MessageTarget } from "@prisma/client";
 
 const ChatLayout = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const targetId = router.query.id as string | undefined;
-  const addMessage = useChatStore((state) => state.addMessage);
-  const addMessageToConversation = useChatStore(
-    (state) => state.addMessageToConversation
+  const queryClient = api.useContext();
+
+  const addMessage = useCallback(
+    (message: MessageDTO) => {
+      switch (message.targetType) {
+        case MessageTarget.User:
+          queryClient.chat.getUserMessages.setData(
+            {
+              targetUserId: message.targetUserId,
+            },
+            (messages) => [...(messages ?? []), message]
+          );
+          break;
+        case MessageTarget.Group:
+          queryClient.groups.getMessages.setData(
+            {
+              targetGroupId: message.targetGroupId,
+            },
+            (messages) => [...(messages ?? []), message]
+          );
+          break;
+      }
+      const isConversationOpen =
+        message.targetUserId === targetId || message.targetGroupId === targetId;
+      queryClient.conversations.getConversations.setData(
+        undefined,
+        (conversations) =>
+          (conversations ?? []).map((c) =>
+            c.targetUserId === message.targetUserId ||
+            c.targetGroupId === message.targetGroupId
+              ? {
+                  ...c,
+                  lastMessage: message,
+                  unreadCount: isConversationOpen ? 0 : c.unreadCount + 1,
+                }
+              : c
+          )
+      );
+    },
+    [queryClient, targetId]
   );
 
   api.chat.onMessage.useSubscription(undefined, {
-    onData: (message) => {
-      if (
-        message.targetUserId === targetId ||
-        message.targetGroupId === targetId
-      ) {
-        addMessage({
-          message,
-          isFromSelf: false,
-        });
-      } else {
-        addMessageToConversation(message);
-      }
-    },
+    onData: addMessage,
   });
 
   return (
