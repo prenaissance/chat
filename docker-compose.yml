@@ -17,6 +17,28 @@ services:
     environment:
       - WEB_SERVER_URL=http://host.docker.internal:3000
       - WS_SERVER_URL=http://host.docker.internal:3001
+    restart: always
+
+  ws-server:
+    build:
+      context: .
+      dockerfile: ./src/ws-server/Dockerfile
+    container_name: ws-server
+    ports:
+      - 127.0.0.1:3001:3001
+    depends_on:
+      - postgres
+      - redis
+    profiles:
+      - web
+    links:
+      - postgres
+      - redis
+    env_file: .env
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
+      - REDIS_URL=redis://redis:6379
+
   postgres:
     image: postgres:latest
     container_name: postgres
@@ -29,6 +51,7 @@ services:
     ports:
       - 5432:5432
     restart: always
+
   redis:
     image: redis:latest
     container_name: redis
@@ -37,6 +60,7 @@ services:
     ports:
       - 6379:6379
     restart: always
+
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite:latest
     container_name: azurite
