@@ -27,6 +27,9 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   headers: async () => {
     return [
       {

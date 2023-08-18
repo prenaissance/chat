@@ -39,6 +39,31 @@ services:
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
       - REDIS_URL=redis://redis:6379
 
+  web-server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: web-server
+    ports:
+      - 3000:3000
+    depends_on:
+      - postgres
+      - redis
+      - azurite
+    profiles:
+      - web
+    links:
+      - postgres
+      - redis
+      - azurite
+    env_file: .env
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
+      - REDIS_URL=redis://redis:6379
+      - AZURE_STORAGE_CONNECTION_STRING=UseDevelopmentStorage=true;BlobEndpoint=azurite:10000;
+      - NODE_ENV=production
+    restart: unless-stopped
+
   postgres:
     image: postgres:latest
     container_name: postgres
